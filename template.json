@@ -1,0 +1,69 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "AWS in Action: chapter 10 with Lambda and API Gateway",
+  "Resources": {
+    "UserTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "AttributeDefinitions": [{
+          "AttributeName": "uid",
+          "AttributeType": "S"
+        }],
+        "KeySchema": [{
+          "AttributeName": "uid",
+          "KeyType": "HASH"
+        }],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 1,
+          "WriteCapacityUnits": 1
+        },
+        "TableName": "todo-user"
+      }
+    },
+    "TaskTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "AttributeDefinitions": [{
+          "AttributeName": "uid",
+          "AttributeType": "S"
+        }, {
+          "AttributeName": "tid",
+          "AttributeType": "N"
+        }, {
+          "AttributeName": "category",
+          "AttributeType": "S"
+        }],
+        "KeySchema": [{
+          "AttributeName": "uid",
+          "KeyType": "HASH"
+        }, {
+          "AttributeName": "tid",
+          "KeyType": "RANGE"
+        }],
+        "GlobalSecondaryIndexes": [{
+          "IndexName": "category-index",
+          "KeySchema": [{
+            "AttributeName": "category",
+            "KeyType": "HASH"
+          }, {
+            "AttributeName": "tid",
+            "KeyType": "RANGE"
+          }],
+          "Projection": {
+            "ProjectionType": "ALL"
+          },
+          "ProvisionedThroughput": {
+            "ReadCapacityUnits": 1,
+            "WriteCapacityUnits": 1
+          }
+        }],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 1,
+          "WriteCapacityUnits": 1
+        },
+        "TableName": "todo-task"
+      }
+    }
+
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "aws-sdk": "2.1.35",
+    "moment": "2.10.3",
+    "node-uuid": "1.4.3"
+  },
+  "bundledDependencies": ["moment", "node-uuid"],
+  "private": true
+}
