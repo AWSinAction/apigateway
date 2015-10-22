@@ -1,6 +1,28 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "AWS in Action: chapter 10 with Lambda and API Gateway",
+  "Parameters": {
+    "S3Bucket": {
+      "Description": "The name of the S3 bucket that contains the source code of your Lambda function.",
+      "Type": "String"
+    },
+    "S3Key": {
+      "Description": "The location and name of your source code .zip file.",
+      "Type": "String"
+    },
+    "MemorySize": {
+      "Description": "The amount of memory, in MB, that is allocated to your Lambda function.",
+      "Type": "Number",
+      "Default": "128"
+    },
+    "AppId": {
+      "Description": "API Gateway App Id. E.g. 1yc6td9zjj",
+      "Type": "String"
+    }
+  },
+  "Conditions": {
+    "ApiGatewayDeplyed": {"Fn::Not": [{"Fn::Equals": ["", {"Ref": "AppId"}]}]}
+  },
   "Resources": {
     "UserTable": {
       "Type": "AWS::DynamoDB::Table",
@@ -63,7 +85,79 @@
         },
         "TableName": "todo-task"
       }
+    },
+    "LambdaRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "lambda.amazonaws.com"
+            },
+            "Action": ["sts:AssumeRole"]
+          }]
+        },
+        "Path": "/",
+        "Policies": [{
+          "PolicyName": "logs",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Effect": "Allow",
+              "Action": [
+                 "logs:*"
+              ],
+              "Resource": "arn:aws:logs:*:*:*"
+            }]
+          }
+        }, {
+          "PolicyName": "dynamodb",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Sid": "1",
+              "Effect": "Allow",
+              "Action": ["dynamodb:Scan", "dynamodb:PutItem", "dynamodb:GetItem", "dynamodb:DeleteItem", "dynamodb:Query", "dynamodb:UpdateItem"],
+              "Resource": [
+                {"Fn::Join" : ["", ["arn:aws:dynamodb:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":table/todo-user*"]]},
+                {"Fn::Join" : ["", ["arn:aws:dynamodb:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":table/todo-task*"]]}
+              ]
+            }]
+          }
+        }]
+      }
+    },
+    "GetUsersLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {"Ref": "S3Bucket"},
+          "S3Key": {"Ref": "S3Key"}
+        },
+        "Description": "GET /users",
+        "Handler": "lambda.getUsers",
+        "MemorySize": {"Ref": "MemorySize"},
+        "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
+        "Runtime": "nodejs",
+        "Timeout": 3
+      }
+    },
+    "GetUsersLambdaPermission": {
+      "Condition": "ApiGatewayDeplyed",
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:invokeFunction",
+        "FunctionName": {"Fn::GetAtt": ["GetUsersLambda", "Arn"]},
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "AppId"}, "/*"]]}
+      }
     }
-
+  },
+  "Outputs": {
+    "GetUsersLambdaArn": {
+      "Value": {"Fn::GetAtt": ["GetUsersLambda", "Arn"]}
+    }
   }
 }

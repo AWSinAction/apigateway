@@ -30,11 +30,12 @@ function mapUserItem(item) {
 }
 
 exports.getUsers = function(event, context) {
+  console.log("getUsers", JSON.stringify(event));
   var params = {
     "TableName": "todo-user",
     "Limit": event.parameters.limit || 10
   };
-  if (event.parameters.next !== null) {
+  if (event.parameters.next) {
     params.ExclusiveStartKey = {
       "uid": {
         "S": event.parameters.next
