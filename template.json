@@ -17,7 +17,8 @@
     },
     "AppId": {
       "Description": "API Gateway App Id. E.g. 1yc6td9zjj",
-      "Type": "String"
+      "Type": "String",
+      "Default": ""
     }
   },
   "Conditions": {

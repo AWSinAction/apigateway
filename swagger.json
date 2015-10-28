@@ -19,6 +19,12 @@
               "items": {
                 "$ref": "#/definitions/User"
               }
+            },
+            "headers": {
+              "Link":  {
+                "description": "Contains the link to the next page.",
+                "type": "string"
+              }
             }
           }
         },
@@ -36,14 +42,20 @@
         }],
         "x-amazon-apigateway-integration": {
           "type": "aws",
-          "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:878533158213:function:apigateway-GetUsersLambda-1QX1J2L4DA75J/invocations",
+          "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:878533158213:function:apigateway-GetUsersLambda-1VBQ7Z0M4IM7Y/invocations",
           "httpMethod": "POST",
           "requestTemplates": {
             "application/json": "{\"body\": $input.json('$'), \"parameters\": {\"limit\": \"$input.params('limit')\", \"next\": \"$input.params('next')\"}}"
           },
           "responses": {
             "default": {
-              "statusCode": "200"
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Link": "'TODO'"
+              },
+              "responseTemplates": {
+                "application/json": "$input.json('$.body')"
+              }
             } 
           }
         }
