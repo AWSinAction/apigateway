@@ -1,5 +1,7 @@
 # API Gateway demo
 
+WORK IN PROGRESS
+
 ## create API Gateway from Swagger.json
 
 Create cloudformation stack
