@@ -95,7 +95,7 @@
                 "method.response.header.Location": "'TODO'"
               },
               "responseTemplates": {
-                "application/json": "{}"
+                "application/json": "$input.json('$.body')"
               }
             } 
           }
@@ -294,7 +294,7 @@
                 "method.response.header.Location": "'TODO'"
               },
               "responseTemplates": {
-                "application/json": "{}"
+                "application/json": "$input.json('$.body')"
               }
             } 
           }

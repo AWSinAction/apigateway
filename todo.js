@@ -73,13 +73,14 @@ exports.postUser = function(event, context) {
       }
     },
     "TableName": "todo-user",
-    "ConditionExpression": "attribute_not_exists(uid)"
+    "ConditionExpression": "attribute_not_exists(uid)",
+    "ReturnValues": 'ALL_NEW'
   };
   db.putItem(params, function(err) {
     if (err) {
       context.fail(err);
     } else {
-      context.succeed({"headers": {"uid": uid}});
+      context.succeed({"headers": {"uid": uid}, "body": mapUserItem(data.Item)});
     }
   });
 };
@@ -145,7 +146,8 @@ exports.postTask = function(event, context) {
       }
     },
     "TableName": "todo-task",
-    "ConditionExpression": "attribute_not_exists(uid) and attribute_not_exists(tid)"
+    "ConditionExpression": "attribute_not_exists(uid) and attribute_not_exists(tid)",
+    "ReturnValues": 'ALL_NEW'
   };
   if (event.body.dueat) {
     params.Item.due = {
@@ -161,7 +163,7 @@ exports.postTask = function(event, context) {
     if (err) {
       context.fail(err);
     } else {
-      context.succeed({"headers": {"uid": event.parameters.userId, "tid": tid}});
+      context.succeed({"headers": {"uid": event.parameters.userId, "tid": tid}, "body": mapUserItem(data.Item)});
     }
   });
 };
