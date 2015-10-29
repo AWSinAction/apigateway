@@ -14,6 +14,7 @@ $ cd apigateway
 create the lambda code file (`lambda.zip`)
 
 ```
+$ npm install
 $ ./bundle.sh
 ```
 
@@ -31,12 +32,13 @@ wait until the stack is created (you will see something instead of `[]` if it is
 $ aws cloudformation describe-stacks --stack-name apigateway --query Stacks[].Outputs
 ```
 
-adjust `swagger.json` to use the correct lambda function ARNs (e.g. arn:aws:lambda:us-east-1:878533158213:function:apigateway-GetUsersLambda-MQ3D7Q3AAQK) with the outputs of the above `describe-stacks` command
+replace all occurrences of `$LambdaArn` in `swagger.json` with the ARN from the stack output above (e.g. arn:aws:lambda:us-east-1:YYY:function:apigateway-Lambda-XXX)
 
 deploy the API Gateway
 
 ```
 $ cd aws-apigateway-importer-master/
+$ mvn assembly:assembly
 $ ./aws-api-import.sh --create ../swagger.json
 $ cd ..
 ```
@@ -63,7 +65,7 @@ $ cd ..
 
 ## Use the API
 
-the following examples assume that you replace $ApiGatewayEndpoint with `https://$ApiId.execute-api.us-east-1.amazonaws.com/stage/`
+the following examples assume that you replace $ApiGatewayEndpoint with `$ApiId.execute-api.us-east-1.amazonaws.com`
 
 create a user
 
@@ -80,36 +82,36 @@ curl -vvv -X GET https://$ApiGatewayEndpoint/stage/v1/user
 create a task
 
 ```
-curl -vvv -X POST -d '{"description": "test task"}' -H "Content-Type: application/json" https://$ApiGatewayEndpoint/stage/v1/user/$userId/task
+curl -vvv -X POST -d '{"description": "test task"}' -H "Content-Type: application/json" https://$ApiGatewayEndpoint/stage/v1/user/$UserId/task
 ```
 
 list tasks
 
 ```
-curl -vvv -X GET ttps://$ApiGatewayEndpoint/stage/v1/user/$userId/task
+curl -vvv -X GET https://$ApiGatewayEndpoint/stage/v1/user/$UserId/task
 ```
 
 mark task as complete
 
 ```
-curl -vvv -X PUT https://$ApiGatewayEndpoint/stage/v1/user/$userId/task/$taskId
+curl -vvv -X PUT https://$ApiGatewayEndpoint/stage/v1/user/$UserId/task/$taskId
 ```
 
 delete task
 
 ```
-curl -vvv -X DELETE https://$ApiGatewayEndpoint/stage/v1/user/$userId/task/$taskId
+curl -vvv -X DELETE https://$ApiGatewayEndpoint/stage/v1/user/$UserId/task/$taskId
 ```
 
 create a task with a category
 
 ```
-curl -vvv -X POST -d '{"description": "test task", "category": "test"}' -H "Content-Type: application/json" https://$ApiGatewayEndpoint/stage/v1/user/$userId/task
+curl -vvv -X POST -d '{"description": "test task", "category": "test"}' -H "Content-Type: application/json" https://$ApiGatewayEndpoint/stage/v1/user/$UserId/task
 
 ```
 list tasks by category
 
 ```
-curl -vvv -X GET ttps://$ApiGatewayEndpoint/stage/v1/category/$category/task
+curl -vvv -X GET https://$ApiGatewayEndpoint/stage/v1/category/$Category/task
 ```
 

@@ -18,7 +18,7 @@
     }
   },
   "Conditions": {
-    "ApiGatewayDeplyed": {"Fn::Not": [{"Fn::Equals": ["", {"Ref": "ApiId"}]}]}
+    "ApiGatewayDeployed": {"Fn::Not": [{"Fn::Equals": ["", {"Ref": "ApiId"}]}]}
   },
   "Resources": {
     "UserTable": {
@@ -126,259 +126,35 @@
         }]
       }
     },
-    "GetUsersLambda": {
+    "Lambda": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
           "S3Bucket": {"Ref": "S3Bucket"},
           "S3Key": {"Ref": "S3Key"}
         },
-        "Description": "GET /user",
-        "Handler": "lambda.getUsers",
+        "Description": "generic hanlder",
+        "Handler": "lambda.handler",
         "MemorySize": 128,
         "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
         "Runtime": "nodejs",
         "Timeout": 3
       }
     },
-    "GetUsersLambdaPermission": {
-      "Condition": "ApiGatewayDeplyed",
+    "LambdaPermission": {
+      "Condition": "ApiGatewayDeployed",
       "Type": "AWS::Lambda::Permission",
       "Properties": {
         "Action": "lambda:invokeFunction",
-        "FunctionName": {"Fn::GetAtt": ["GetUsersLambda", "Arn"]},
-        "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
-      }
-    },
-    "PostUserLambda": {
-      "Type": "AWS::Lambda::Function",
-      "Properties": {
-        "Code": {
-          "S3Bucket": {"Ref": "S3Bucket"},
-          "S3Key": {"Ref": "S3Key"}
-        },
-        "Description": "POST /user",
-        "Handler": "lambda.postUser",
-        "MemorySize": 128,
-        "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
-        "Runtime": "nodejs",
-        "Timeout": 3
-      }
-    },
-    "PostUserLambdaPermission": {
-      "Condition": "ApiGatewayDeplyed",
-      "Type": "AWS::Lambda::Permission",
-      "Properties": {
-        "Action": "lambda:invokeFunction",
-        "FunctionName": {"Fn::GetAtt": ["PostUserLambda", "Arn"]},
-        "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
-      }
-    },
-    "GetUserLambda": {
-      "Type": "AWS::Lambda::Function",
-      "Properties": {
-        "Code": {
-          "S3Bucket": {"Ref": "S3Bucket"},
-          "S3Key": {"Ref": "S3Key"}
-        },
-        "Description": "GET /user/:userId",
-        "Handler": "lambda.getUser",
-        "MemorySize": 128,
-        "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
-        "Runtime": "nodejs",
-        "Timeout": 3
-      }
-    },
-    "GetUserLambdaPermission": {
-      "Condition": "ApiGatewayDeplyed",
-      "Type": "AWS::Lambda::Permission",
-      "Properties": {
-        "Action": "lambda:invokeFunction",
-        "FunctionName": {"Fn::GetAtt": ["GetUserLambda", "Arn"]},
-        "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
-      }
-    },
-    "DeleteUserLambda": {
-      "Type": "AWS::Lambda::Function",
-      "Properties": {
-        "Code": {
-          "S3Bucket": {"Ref": "S3Bucket"},
-          "S3Key": {"Ref": "S3Key"}
-        },
-        "Description": "DELETE /user/:userId",
-        "Handler": "lambda.deleteUser",
-        "MemorySize": 128,
-        "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
-        "Runtime": "nodejs",
-        "Timeout": 3
-      }
-    },
-    "DeleteUserLambdaPermission": {
-      "Condition": "ApiGatewayDeplyed",
-      "Type": "AWS::Lambda::Permission",
-      "Properties": {
-        "Action": "lambda:invokeFunction",
-        "FunctionName": {"Fn::GetAtt": ["DeleteUserLambda", "Arn"]},
-        "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
-      }
-    },
-    "GetTasksLambda": {
-      "Type": "AWS::Lambda::Function",
-      "Properties": {
-        "Code": {
-          "S3Bucket": {"Ref": "S3Bucket"},
-          "S3Key": {"Ref": "S3Key"}
-        },
-        "Description": "GET /user/:userId/task",
-        "Handler": "lambda.getTasks",
-        "MemorySize": 128,
-        "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
-        "Runtime": "nodejs",
-        "Timeout": 3
-      }
-    },
-    "GetTasksLambdaPermission": {
-      "Condition": "ApiGatewayDeplyed",
-      "Type": "AWS::Lambda::Permission",
-      "Properties": {
-        "Action": "lambda:invokeFunction",
-        "FunctionName": {"Fn::GetAtt": ["GetTasksLambda", "Arn"]},
-        "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
-      }
-    },
-    "PostTaskLambda": {
-      "Type": "AWS::Lambda::Function",
-      "Properties": {
-        "Code": {
-          "S3Bucket": {"Ref": "S3Bucket"},
-          "S3Key": {"Ref": "S3Key"}
-        },
-        "Description": "POST /user/:userId/task",
-        "Handler": "lambda.postTask",
-        "MemorySize": 128,
-        "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
-        "Runtime": "nodejs",
-        "Timeout": 3
-      }
-    },
-    "PostTaskLambdaPermission": {
-      "Condition": "ApiGatewayDeplyed",
-      "Type": "AWS::Lambda::Permission",
-      "Properties": {
-        "Action": "lambda:invokeFunction",
-        "FunctionName": {"Fn::GetAtt": ["PostTaskLambda", "Arn"]},
-        "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
-      }
-    },
-    "PutTaskLambda": {
-      "Type": "AWS::Lambda::Function",
-      "Properties": {
-        "Code": {
-          "S3Bucket": {"Ref": "S3Bucket"},
-          "S3Key": {"Ref": "S3Key"}
-        },
-        "Description": "PUT /user/:userId/task/:taskId",
-        "Handler": "lambda.putTask",
-        "MemorySize": 128,
-        "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
-        "Runtime": "nodejs",
-        "Timeout": 3
-      }
-    },
-    "PutTaskLambdaPermission": {
-      "Condition": "ApiGatewayDeplyed",
-      "Type": "AWS::Lambda::Permission",
-      "Properties": {
-        "Action": "lambda:invokeFunction",
-        "FunctionName": {"Fn::GetAtt": ["PutTaskLambda", "Arn"]},
-        "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
-      }
-    },
-    "DeleteTaskLambda": {
-      "Type": "AWS::Lambda::Function",
-      "Properties": {
-        "Code": {
-          "S3Bucket": {"Ref": "S3Bucket"},
-          "S3Key": {"Ref": "S3Key"}
-        },
-        "Description": "DELETE /user/:userId/task",
-        "Handler": "lambda.deleteTask",
-        "MemorySize": 128,
-        "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
-        "Runtime": "nodejs",
-        "Timeout": 3
-      }
-    },
-    "DeleteTaskLambdaPermission": {
-      "Condition": "ApiGatewayDeplyed",
-      "Type": "AWS::Lambda::Permission",
-      "Properties": {
-        "Action": "lambda:invokeFunction",
-        "FunctionName": {"Fn::GetAtt": ["DeleteTaskLambda", "Arn"]},
-        "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
-      }
-    },
-    "GetTasksByCategoryLambda": {
-      "Type": "AWS::Lambda::Function",
-      "Properties": {
-        "Code": {
-          "S3Bucket": {"Ref": "S3Bucket"},
-          "S3Key": {"Ref": "S3Key"}
-        },
-        "Description": "GET /category/:ctageory/task",
-        "Handler": "lambda.getTasksByCategory",
-        "MemorySize": 128,
-        "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
-        "Runtime": "nodejs",
-        "Timeout": 3
-      }
-    },
-    "GetTasksByCategoryLambdaPermission": {
-      "Condition": "ApiGatewayDeplyed",
-      "Type": "AWS::Lambda::Permission",
-      "Properties": {
-        "Action": "lambda:invokeFunction",
-        "FunctionName": {"Fn::GetAtt": ["GetTasksByCategoryLambda", "Arn"]},
+        "FunctionName": {"Fn::GetAtt": ["Lambda", "Arn"]},
         "Principal": "apigateway.amazonaws.com",
         "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
       }
     }
   },
   "Outputs": {
-    "GetUsersLambdaArn": {
-      "Value": {"Fn::GetAtt": ["GetUsersLambda", "Arn"]}
-    },
-    "PostUserLambdaArn": {
-      "Value": {"Fn::GetAtt": ["PostUserLambda", "Arn"]}
-    },
-    "GetUserLambdaArn": {
-      "Value": {"Fn::GetAtt": ["GetUserLambda", "Arn"]}
-    },
-    "DeleteUserLambdaArn": {
-      "Value": {"Fn::GetAtt": ["DeleteUserLambda", "Arn"]}
-    },
-    "GetTasksLambdaArn": {
-      "Value": {"Fn::GetAtt": ["GetTasksLambda", "Arn"]}
-    },
-    "PostTaskLambdaArn": {
-      "Value": {"Fn::GetAtt": ["PostTaskLambda", "Arn"]}
-    },
-    "PutTaskLambdaArn": {
-      "Value": {"Fn::GetAtt": ["PutTaskLambda", "Arn"]}
-    },
-    "DeleteTaskLambdaArn": {
-      "Value": {"Fn::GetAtt": ["DeleteTaskLambda", "Arn"]}
-    },
-    "GetTasksByCategoryLambdaArn": {
-      "Value": {"Fn::GetAtt": ["GetTasksByCategoryLambda", "Arn"]}
+    "LambdaArn": {
+      "Value": {"Fn::GetAtt": ["Lambda", "Arn"]}
     }
   }
 }
