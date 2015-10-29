@@ -13,7 +13,7 @@
       "get": {
         "responses": {
           "200": {
-            "description": "user retrieved",
+            "description": "users retrieved",
             "schema": {
               "type": "array",
               "items": {
@@ -22,7 +22,7 @@
             },
             "headers": {
               "Link":  {
-                "description": "Contains the link to the next page.",
+                "description": "contains the link to the next page",
                 "type": "string"
               }
             }
@@ -31,13 +31,13 @@
         "parameters": [{
           "name": "limit",
           "in": "query",
-          "description": "Result limit",
+          "description": "result limit",
           "default": "10",
           "type": "integer"
         }, {
           "name": "next",
           "in": "query",
-          "description": "Use the Link header to get the next page.",
+          "description": "use the Link header to get the next page",
           "type": "string"
         }],
         "x-amazon-apigateway-integration": {
@@ -45,7 +45,7 @@
           "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:878533158213:function:apigateway-GetUsersLambda-MQ3D7Q3AAQK/invocations",
           "httpMethod": "POST",
           "requestTemplates": {
-            "application/json": "{\"body\": $input.json('$'), \"parameters\": {\"limit\": \"$input.params('limit')\", \"next\": \"$input.params('next')\"}}"
+            "application/json": "{\"parameters\": {\"limit\": \"$input.params('limit')\", \"next\": \"$input.params('next')\"}}"
           },
           "responses": {
             "default": {
@@ -63,10 +63,10 @@
       "post": {
         "responses": {
           "201": {
-            "description": "User created",
+            "description": "user created",
             "headers": {
               "Location": {
-                "description": "Links to the newly created user.",
+                "description": "links to the newly created user",
                 "type": "string"
               }
             }
@@ -140,7 +140,7 @@
       "delete": {
         "responses": {
           "204": {
-            "description": "User deleted."
+            "description": "user deleted"
           }
         },
         "x-amazon-apigateway-integration": {
@@ -149,6 +149,209 @@
           "httpMethod": "POST",
           "requestTemplates": {
             "application/json": "{\"parameters\": {\"userId\": \"$input.params('userId')\"}}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "204",
+              "responseTemplates": {
+                "application/json": "{}"
+              }
+            } 
+          }
+        }
+      }
+    },
+    "/user/{userId}/task": {
+      "parameters": [{
+        "name": "userId",
+        "in": "path",
+        "description": "ID of user",
+        "required": true,
+        "default": "",
+        "type": "string"
+      }],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "tasks retrieved",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Task"
+              }
+            },
+            "headers": {
+              "Link":  {
+                "description": "contains the link to the next page",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "parameters": [{
+          "name": "limit",
+          "in": "query",
+          "description": "result limit",
+          "default": "10",
+          "type": "integer"
+        }, {
+          "name": "next",
+          "in": "query",
+          "description": "use the Link header to get the next page",
+          "type": "string"
+        }, {
+          "name": "overdue",
+          "in": "query",
+          "description": "include overdue tasks",
+          "type": "boolean",
+          "allowEmptyValue": true
+        }, {
+          "name": "due",
+          "in": "query",
+          "description": "include due tasks",
+          "type": "boolean",
+          "allowEmptyValue": true
+        }, {
+          "name": "withoutdue",
+          "in": "query",
+          "description": "include tasks without due",
+          "type": "boolean",
+          "allowEmptyValue": true
+        }, {
+          "name": "futuredue",
+          "in": "query",
+          "description": "include future due tasks",
+          "type": "boolean",
+          "allowEmptyValue": true
+        }, {
+          "name": "dueafter",
+          "in": "query",
+          "description": "include tasks due after yyyymmdd",
+          "type": "integer"
+        }, {
+          "name": "duebefore",
+          "in": "query",
+          "description": "include tasks due before yyyymmdd",
+          "type": "integer"
+        }, {
+          "name": "category",
+          "in": "query",
+          "description": "include tasks with category",
+          "type": "string"
+        }],
+        "x-amazon-apigateway-integration": {
+          "type": "aws",
+          "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:878533158213:function:apigateway-GetTasksLambda-9SQ5RJK0NM8M/invocations",
+          "httpMethod": "POST",
+          "requestTemplates": {
+            "application/json": "{\"parameters\": {\"userId\": \"$input.params('userId')\", \"limit\": \"$input.params('limit')\", \"next\": \"$input.params('next')\", \"overdue\": \"$input.params('overdue')\", \"due\": \"$input.params('due')\", \"withoutdue\": \"$input.params('withoutdue')\", \"futuredue\": \"$input.params('futuredue')\", \"dueafter\": \"$input.params('dueafter')\", \"duebefore\": \"$input.params('duebefore')\", \"category\": \"$input.params('category')\"}}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Link": "'TODO'"
+              },
+              "responseTemplates": {
+                "application/json": "$input.json('$.body')"
+              }
+            } 
+          }
+        }
+      },
+      "post": {
+        "responses": {
+          "201": {
+            "description": "task created",
+            "headers": {
+              "Location": {
+                "description": "links to the newly created task",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "parameters": [{
+          "name": "body",
+          "in": "body",
+          "description": "body object",
+          "required": true,
+          "schema": {
+            "$ref":"#/definitions/CreateTask"
+          }
+        }],
+        "x-amazon-apigateway-integration": {
+          "type": "aws",
+          "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:878533158213:function:apigateway-PostTaskLambda-3OFBH2TRAE4O/invocations",
+          "httpMethod": "POST",
+          "requestTemplates": {
+            "application/json": "{\"body\": $input.json('$'), \"parameters\": {\"userId\": \"$input.params('userId')\"}}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "201",
+              "responseParameters": {
+                "method.response.header.Location": "'TODO'"
+              },
+              "responseTemplates": {
+                "application/json": "{}"
+              }
+            } 
+          }
+        }
+      }
+    },
+    "/user/{userId}/task/{taskId}": {
+      "parameters": [{
+        "name": "userId",
+        "in": "path",
+        "description": "ID of user",
+        "required": true,
+        "default": "",
+        "type": "string"
+      }, {
+        "name": "taskId",
+        "in": "path",
+        "description": "ID of task",
+        "required": true,
+        "default": "",
+        "type": "string"
+      }],
+      "put": {
+        "responses": {
+          "204": {
+            "description": "task done"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws",
+          "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:878533158213:function:apigateway-PutTaskLambda-4WAIXVAV0P4X/invocations",
+          "httpMethod": "POST",
+          "requestTemplates": {
+            "application/json": "{\"body\": $input.json('$'), \"parameters\": {\"userId\": \"$input.params('userId')\", \"taskId\": \"$input.params('taskId')\"}}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "204",
+              "responseTemplates": {
+                "application/json": "{}"
+              }
+            } 
+          }
+        }
+      },
+      "delete": {
+        "responses": {
+          "204": {
+            "description": "task deleted"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws",
+          "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:878533158213:function:apigateway-DeleteTaskLambda-1IZ7F5I7DLQHW/invocations",
+          "httpMethod": "POST",
+          "requestTemplates": {
+            "application/json": "{\"body\": $input.json('$'), \"parameters\": {\"userId\": \"$input.params('userId')\", \"taskId\": \"$input.params('taskId')\"}}"
           },
           "responses": {
             "default": {
@@ -202,7 +405,7 @@
           "type": "string"
         }
       },
-      "required": ["description", "created"]
+      "required": ["description"]
     },
     "User": {
       "type": "object",

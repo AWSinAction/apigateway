@@ -58,6 +58,7 @@ exports.getUsers = function(event, context) {
 };
 
 exports.postUser = function(event, context) {
+  console.log("postUser", JSON.stringify(event));
   var uid = uuid.v4();
   var params = {
     "Item": {
@@ -84,6 +85,7 @@ exports.postUser = function(event, context) {
 };
 
 exports.getUser = function(event, context) {
+  console.log("getUser", JSON.stringify(event));
   var params = {
     "Key": {
       "uid": {
@@ -106,6 +108,7 @@ exports.getUser = function(event, context) {
 };
 
 exports.deleteUser = function(event, context) {
+  console.log("deleteUser", JSON.stringify(event));
   var params = {
     "Key": {
       "uid": {
@@ -123,19 +126,19 @@ exports.deleteUser = function(event, context) {
   });
 };
 
-/*
-if (input['task-add'] === true) {
+exports.postTask = function(event, context) {
+  console.log("postTask", JSON.stringify(event));
   var tid = Date.now();
   var params = {
     "Item": {
       "uid": {
-        "S": input['<uid>']
+        "S": event.parameters.userId
       },
       "tid": {
         "N": tid.toString()
       },
       "description": {
-        "S": input['<description>']
+        "S": event.body.description
       },
       "created": {
         "N": moment().format("YYYYMMDD")
@@ -144,78 +147,62 @@ if (input['task-add'] === true) {
     "TableName": "todo-task",
     "ConditionExpression": "attribute_not_exists(uid) and attribute_not_exists(tid)"
   };
-  if (input['--dueat'] !== null) {
+  if (event.body.dueat) {
     params.Item.due = {
-      "N": input['--dueat']
+      "N": event.body.dueat
     };
   }
-  if (input['<category>'] !== null) {
+  if (event.body.category) {
     params.Item.category = {
-      "S": input['<category>']
+      "S": event.body.category
     };
   }
   db.putItem(params, function(err) {
     if (err) {
-      console.error('error', err);
+      context.fail(err);
     } else {
-      console.log('task added with tid ' + tid);
+      context.succeed({"headers": {"uid": event.parameters.userId, "tid": tid}});
     }
   });
-} else if (input['task-rm'] === true) {
-  var params = {
-    "Key": {
-      "uid": {
-        "S": input['<uid>']
-      },
-      "tid": {
-        "N": input['<tid>']
-      }
-    },
-    "TableName": "todo-task"
-  };
-  db.deleteItem(params, function(err) {
-    if (err) {
-      console.error('error', err);
-    } else {
-      console.log('task removed with tid ' + input['<tid>']);
-    }
-  });
-} else if (input['task-ls'] === true) {
+};
+
+exports.getTasks = function(event, context) {
+  console.log("getTasks", JSON.stringify(event));
   var params = {
     "KeyConditionExpression": "uid = :uid",
     "ExpressionAttributeValues": {
       ":uid": {
-        "S": input['<uid>']
+        "S": event.parameters.userId
       }
     },
     "TableName": "todo-task",
-    "Limit": input['--limit']
+    "Limit": event.parameters.limit || 10
   };
-  if (input['--next'] !== null) {
+  if (event.parameters.next) {
     params.KeyConditionExpression += ' AND tid > :next';
     params.ExpressionAttributeValues[':next'] = {
-      "N": input['--next']
+      "N": event.parameters.next
     };
   }
-  if (input['--overdue'] === true) {
+  if (event.parameters.overdue) {
     params.FilterExpression = "due < :yyyymmdd";
     params.ExpressionAttributeValues[':yyyymmdd'] = {"N": moment().format("YYYYMMDD")};
-  } else if (input['--due'] === true) {
+  } else if (event.parameters.due) {
     params.FilterExpression = "due = :yyyymmdd";
     params.ExpressionAttributeValues[':yyyymmdd'] = {"N": moment().format("YYYYMMDD")};
-  } else if (input['--withoutdue'] === true) {
+  } else if (event.parameters.withoutdue) {
     params.FilterExpression = "attribute_not_exists(due)";
-  } else if (input['--futuredue'] === true) {
+  } else if (event.parameters.futuredue) {
     params.FilterExpression = "due > :yyyymmdd";
     params.ExpressionAttributeValues[':yyyymmdd'] = {"N": moment().format("YYYYMMDD")};
-  } else if (input['--dueafter'] !== null) {
+  } else if (event.parameters.dueafter) {
     params.FilterExpression = "due > :yyyymmdd";
-    params.ExpressionAttributeValues[':yyyymmdd'] = {"N": input['--dueafter']};
-  } else if (input['--duebefore'] !== null) {
+    params.ExpressionAttributeValues[':yyyymmdd'] = {"N": event.parameters.dueafter};
+  } else if (event.parameters.duebefore) {
     params.FilterExpression = "due < :yyyymmdd";
-    params.ExpressionAttributeValues[':yyyymmdd'] = {"N": input['--duebefore']};
+    params.ExpressionAttributeValues[':yyyymmdd'] = {"N": event.parameters.duebefore};
   }
-  if (input['<category>'] !== null) {
+  if (event.parameters.category) {
     if (params.FilterExpression === undefined) {
       params.FilterExpression = '';
     } else {
@@ -223,20 +210,76 @@ if (input['task-add'] === true) {
     }
     params.FilterExpression += 'category = :category';
     params.ExpressionAttributeValues[':category'] = {
-      "S": input['<category>']
+      "S": event.parameters.category
     };
   }
   db.query(params, function(err, data) {
     if (err) {
-      console.error('error', err);
+      context.fail(err);
     } else {
-      console.log('tasks', data.Items.map(mapTaskItem));
+      var res = {
+        "body": data.Items.map(mapTaskItem)
+      };
       if (data.LastEvaluatedKey !== undefined) {
-        console.log('more tasks available with --next=' + data.LastEvaluatedKey.tid.N);
+        res.headers = {"next": data.LastEvaluatedKey.tid.N};
       }
+      context.succeed(res);
     }
   });
-} else if (input['task-la'] === true) {
+};
+
+exports.deleteTask = function(event, context) {
+  console.log("deleteTask", JSON.stringify(event));
+  var params = {
+    "Key": {
+      "uid": {
+        "S": event.parameters.userId
+      },
+      "tid": {
+        "N": event.parameters.taskId
+      }
+    },
+    "TableName": "todo-task"
+  };
+  db.deleteItem(params, function(err) {
+    if (err) {
+      context.fail(err);
+    } else {
+      context.succeed();
+    }
+  });
+};
+
+exports.putTask = function(event, context) {
+  console.log("putTask", JSON.stringify(event));
+  var params = {
+    "Key": {
+      "uid": {
+        "S": event.parameters.userId
+      },
+      "tid": {
+        "N": event.parameters.taskId
+      }
+    },
+    "UpdateExpression": "SET completed = :yyyymmdd",
+    "ExpressionAttributeValues": {
+      ":yyyymmdd": {
+        "N": moment().format("YYYYMMDD")
+      }
+    },
+    "TableName": "todo-task"
+  };
+  db.updateItem(params, function(err) {
+    if (err) {
+      context.fail(err);
+    } else {
+      context.succeed();
+    }
+  });
+};
+
+/*
+if (input['task-la'] === true) {
   var params = {
     "KeyConditionExpression": "category = :category",
     "ExpressionAttributeValues": {
@@ -280,31 +323,6 @@ if (input['task-add'] === true) {
       if (data.LastEvaluatedKey !== undefined) {
         console.log('more tasks available with --next=' + data.LastEvaluatedKey.tid.N);
       }
-    }
-  });
-} else if (input['task-done'] === true) {
-  var params = {
-    "Key": {
-      "uid": {
-        "S": input['<uid>']
-      },
-      "tid": {
-        "N": input['<tid>']
-      }
-    },
-    "UpdateExpression": "SET completed = :yyyymmdd",
-    "ExpressionAttributeValues": {
-      ":yyyymmdd": {
-        "N": moment().format("YYYYMMDD")
-      }
-    },
-    "TableName": "todo-task"
-  };
-  db.updateItem(params, function(err) {
-    if (err) {
-      console.error('error', err);
-    } else {
-      console.log('task completed with tid ' + input['<tid>']);
     }
   });
 }

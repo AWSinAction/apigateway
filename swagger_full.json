@@ -1,127 +1,5 @@
 {
   "paths": {
-    "/user/{userId}/task": {
-      "parameters": [{
-        "name": "userId",
-        "in": "path",
-        "description": "ID of user",
-        "required": true,
-        "default": "",
-        "type": "string"
-      }],
-      "get": {
-        "responses": {
-          "200": {
-            "description": "user retrieved",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Task"
-              }
-            }
-          }
-        },
-        "parameters": [{
-          "name": "limit",
-          "in": "query",
-          "description": "Result limit",
-          "default": "10",
-          "type": "integer"
-        }, {
-          "name": "next",
-          "in": "query",
-          "description": "Use the Link header to get the next page.",
-          "type": "string"
-        }, {
-          "name": "overdue",
-          "in": "query",
-          "description": "include overdue tasks",
-          "type": "boolean",
-          "allowEmptyValue": true
-        }, {
-          "name": "due",
-          "in": "query",
-          "description": "include due tasks",
-          "type": "boolean",
-          "allowEmptyValue": true
-        }, {
-          "name": "withoutdue",
-          "in": "query",
-          "description": "include tasks without due",
-          "type": "boolean",
-          "allowEmptyValue": true
-        }, {
-          "name": "futuredue",
-          "in": "query",
-          "description": "include future due tasks",
-          "type": "boolean",
-          "allowEmptyValue": true
-        }, {
-          "name": "dueafter",
-          "in": "query",
-          "description": "include tasks due after yyyymmdd",
-          "type": "integer"
-        }, {
-          "name": "duebefore",
-          "in": "query",
-          "description": "include tasks due before yyyymmdd",
-          "type": "integer"
-        }]
-      },
-      "post": {
-        "responses": {
-          "201": {
-            "description": "Task created",
-            "headers": {
-              "Location": {
-                "description": "Links to the newly created task.",
-                "type": "string"
-              }
-            }
-          }
-        },
-        "parameters": [{
-          "name": "body",
-          "in": "body",
-          "description": "body object",
-          "required": true,
-          "schema": {
-            "$ref":"#/definitions/CreateTask"
-          }
-        }]
-      }
-    },
-    "/user/{userId}/task/{taskId}": {
-      "parameters": [{
-        "name": "userId",
-        "in": "path",
-        "description": "ID of user",
-        "required": true,
-        "default": "",
-        "type": "string"
-      }, {
-        "name": "taskId",
-        "in": "path",
-        "description": "ID of task",
-        "required": true,
-        "default": "",
-        "type": "string"
-      }],
-      "put": {
-        "responses": {
-          "204": {
-            "description": "Task done."
-          }
-        }
-      },
-      "delete": {
-        "responses": {
-          "204": {
-            "description": "Task deleted."
-          }
-        }
-      }
-    },
     "/category/{categoryId}/task": {
       "parameters": [{
         "name": "categoryId",
@@ -134,11 +12,17 @@
       "get": {
         "responses": {
           "200": {
-            "description": "user retrieved",
+            "description": "tasks retrieved",
             "schema": {
               "type": "array",
               "items": {
                 "$ref": "#/definitions/Task"
+              }
+            },
+            "headers": {
+              "Link":  {
+                "description": "contains the link to the next page",
+                "type": "string"
               }
             }
           }
@@ -146,13 +30,13 @@
         "parameters": [{
           "name": "limit",
           "in": "query",
-          "description": "Result limit",
+          "description": "result limit",
           "default": "10",
           "type": "integer"
         }, {
           "name": "next",
           "in": "query",
-          "description": "Use the Link header to get the next page.",
+          "description": "use the Link header to get the next page",
           "type": "string"
         }, {
           "name": "overdue",
