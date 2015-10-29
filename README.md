@@ -80,4 +80,15 @@ delete task
 curl -vvv -X DELETE https://$ApiGatewayEndpoint/stage/v1/user/$userId/task/$taskId
 ```
 
+create a task with a category
+
+```
+curl -vvv -X POST -d '{"description": "test task", "category": "test"}' -H "Content-Type: application/json" https://$ApiGatewayEndpoint/stage/v1/user/$userId/task
+
+```
+list tasks by category
+
+```
+curl -vvv -X GET ttps://$ApiGatewayEndpoint/stage/v1/category/$category/task
+```
 

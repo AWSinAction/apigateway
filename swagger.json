@@ -363,6 +363,100 @@
           }
         }
       }
+    },
+    "/category/{category}/task": {
+      "parameters": [{
+        "name": "category",
+        "in": "path",
+        "description": "category",
+        "required": true,
+        "default": "",
+        "type": "string"
+      }],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "tasks retrieved",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Task"
+              }
+            },
+            "headers": {
+              "Link":  {
+                "description": "contains the link to the next page",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "parameters": [{
+          "name": "limit",
+          "in": "query",
+          "description": "result limit",
+          "default": "10",
+          "type": "integer"
+        }, {
+          "name": "next",
+          "in": "query",
+          "description": "use the Link header to get the next page",
+          "type": "string"
+        }, {
+          "name": "overdue",
+          "in": "query",
+          "description": "include overdue tasks",
+          "type": "boolean",
+          "allowEmptyValue": true
+        }, {
+          "name": "due",
+          "in": "query",
+          "description": "include due tasks",
+          "type": "boolean",
+          "allowEmptyValue": true
+        }, {
+          "name": "withoutdue",
+          "in": "query",
+          "description": "include tasks without due",
+          "type": "boolean",
+          "allowEmptyValue": true
+        }, {
+          "name": "futuredue",
+          "in": "query",
+          "description": "include future due tasks",
+          "type": "boolean",
+          "allowEmptyValue": true
+        }, {
+          "name": "dueafter",
+          "in": "query",
+          "description": "include tasks due after yyyymmdd",
+          "type": "integer"
+        }, {
+          "name": "duebefore",
+          "in": "query",
+          "description": "include tasks due before yyyymmdd",
+          "type": "integer"
+        }],
+        "x-amazon-apigateway-integration": {
+          "type": "aws",
+          "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:878533158213:function:apigateway-GetTasksByCategoryLambda-1H3W8X6GUPOGR/invocations",
+          "httpMethod": "POST",
+          "requestTemplates": {
+            "application/json": "{\"parameters\": {\"category\": \"$input.params('category')\", \"limit\": \"$input.params('limit')\", \"next\": \"$input.params('next')\", \"overdue\": \"$input.params('overdue')\", \"due\": \"$input.params('due')\", \"withoutdue\": \"$input.params('withoutdue')\", \"futuredue\": \"$input.params('futuredue')\", \"dueafter\": \"$input.params('dueafter')\", \"duebefore\": \"$input.params('duebefore')\"}}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Link": "'TODO'"
+              },
+              "responseTemplates": {
+                "application/json": "$input.json('$.body')"
+              }
+            } 
+          }
+        }
+      }
     }
   },
   "definitions": {

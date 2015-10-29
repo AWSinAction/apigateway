@@ -278,52 +278,54 @@ exports.putTask = function(event, context) {
   });
 };
 
-/*
-if (input['task-la'] === true) {
+exports.getTasksByCategory = function(event, context) {
+  console.log("getTasksByCategory", JSON.stringify(event));
   var params = {
     "KeyConditionExpression": "category = :category",
     "ExpressionAttributeValues": {
       ":category": {
-        "S": input['<category>']
+        "S": event.parameters.category
       }
     },
     "TableName": "todo-task",
     "IndexName": "category-index",
-    "Limit": input['--limit']
+    "Limit": event.parameters.limit || 10
   };
-  if (input['--next'] !== null) {
+  if (event.parameters.next) {
     params.KeyConditionExpression += ' AND tid > :next';
     params.ExpressionAttributeValues[':next'] = {
-      "N": input['--next']
+      "N": event.parameters.next
     };
   }
-  if (input['--overdue'] === true) {
+  if (event.parameters.overdue) {
     params.FilterExpression = "due < :yyyymmdd";
     params.ExpressionAttributeValues[':yyyymmdd'] = {"N": moment().format("YYYYMMDD")};
-  } else if (input['--due'] === true) {
+  } else if (event.parameters.due) {
     params.FilterExpression = "due = :yyyymmdd";
     params.ExpressionAttributeValues[':yyyymmdd'] = {"N": moment().format("YYYYMMDD")};
-  } else if (input['--withoutdue'] === true) {
+  } else if (event.parameters.withoutdue) {
     params.FilterExpression = "attribute_not_exists(due)";
-  } else if (input['--futuredue'] === true) {
+  } else if (event.parameters.futuredue) {
     params.FilterExpression = "due > :yyyymmdd";
     params.ExpressionAttributeValues[':yyyymmdd'] = {"N": moment().format("YYYYMMDD")};
-  } else if (input['--dueafter'] !== null) {
+  } else if (event.parameters.dueafter) {
     params.FilterExpression = "due > :yyyymmdd";
-    params.ExpressionAttributeValues[':yyyymmdd'] = {"N": input['--dueafter']};
-  } else if (input['--duebefore'] !== null) {
+    params.ExpressionAttributeValues[':yyyymmdd'] = {"N": event.parameters.dueafter};
+  } else if (event.parameters.duebefore) {
     params.FilterExpression = "due < :yyyymmdd";
-    params.ExpressionAttributeValues[':yyyymmdd'] = {"N": input['--duebefore']};
+    params.ExpressionAttributeValues[':yyyymmdd'] = {"N": event.parameters.duebefore};
   }
   db.query(params, function(err, data) {
     if (err) {
-      console.error('error', err);
+      context.fail(err);
     } else {
-      console.log('tasks', data.Items.map(mapTaskItem));
+      var res = {
+        "body": data.Items.map(mapTaskItem)
+      };
       if (data.LastEvaluatedKey !== undefined) {
-        console.log('more tasks available with --next=' + data.LastEvaluatedKey.tid.N);
+        res.headers = {"next": data.LastEvaluatedKey.tid.N};
       }
+      context.succeed(res);
     }
   });
-}
-*/
+};

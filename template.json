@@ -329,6 +329,31 @@
         "Principal": "apigateway.amazonaws.com",
         "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "AppId"}, "/*"]]}
       }
+    },
+    "GetTasksByCategoryLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {"Ref": "S3Bucket"},
+          "S3Key": {"Ref": "S3Key"}
+        },
+        "Description": "GET /category/:ctageory/task",
+        "Handler": "lambda.getTasksByCategory",
+        "MemorySize": {"Ref": "MemorySize"},
+        "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
+        "Runtime": "nodejs",
+        "Timeout": 3
+      }
+    },
+    "GetTasksByCategoryLambdaPermission": {
+      "Condition": "ApiGatewayDeplyed",
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:invokeFunction",
+        "FunctionName": {"Fn::GetAtt": ["GetTasksByCategoryLambda", "Arn"]},
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "AppId"}, "/*"]]}
+      }
     }
   },
   "Outputs": {
@@ -355,6 +380,9 @@
     },
     "DeleteTaskLambdaArn": {
       "Value": {"Fn::GetAtt": ["DeleteTaskLambda", "Arn"]}
+    },
+    "GetTasksByCategoryLambdaArn": {
+      "Value": {"Fn::GetAtt": ["GetTasksByCategoryLambda", "Arn"]}
     }
   }
 }
