@@ -78,7 +78,7 @@ exports.postUser = function(event, context) {
     if (err) {
       context.fail(err);
     } else {
-      context.succeed({"body": uid});
+      context.succeed({"headers": {"uid": uid}});
     }
   });
 };
@@ -87,7 +87,7 @@ exports.getUser = function(event, context) {
   var params = {
     "Key": {
       "uid": {
-        "S": event.parameters.uid
+        "S": event.parameters.userId
       }
     },
     "TableName": "todo-user"
@@ -109,7 +109,7 @@ exports.deleteUser = function(event, context) {
   var params = {
     "Key": {
       "uid": {
-        "S": event.parameters.uid
+        "S": event.parameters.userId
       }
     },
     "TableName": "todo-user"

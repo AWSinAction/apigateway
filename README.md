@@ -27,3 +27,11 @@ update the CloudFormation template to set the AppId parameter
 ```
 $ aws --profile awsinaction cloudformation update-stack --stack-name apigateway --template-body file://template.json --capabilities CAPABILITY_IAM --parameters ParameterKey=S3Bucket,UsePreviousValue=true ParameterKey=S3Key,UsePreviousValue=true ParameterKey=AppId,ParameterValue=XXX
 ```
+
+deploy to stage
+
+```
+$ cd aws-apigateway-importer-master/
+$ ./aws-api-import.sh --update API_ID --deploy stage ../swagger.json --profile awsinaction
+$ cd ..
+```

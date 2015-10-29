@@ -42,7 +42,7 @@
         }],
         "x-amazon-apigateway-integration": {
           "type": "aws",
-          "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:878533158213:function:apigateway-GetUsersLambda-1VBQ7Z0M4IM7Y/invocations",
+          "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:878533158213:function:apigateway-GetUsersLambda-MQ3D7Q3AAQK/invocations",
           "httpMethod": "POST",
           "requestTemplates": {
             "application/json": "{\"body\": $input.json('$'), \"parameters\": {\"limit\": \"$input.params('limit')\", \"next\": \"$input.params('next')\"}}"
@@ -59,7 +59,107 @@
             } 
           }
         }
+      },
+      "post": {
+        "responses": {
+          "201": {
+            "description": "User created",
+            "headers": {
+              "Location": {
+                "description": "Links to the newly created user.",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "parameters": [{
+          "name": "body",
+          "in": "body",
+          "description": "body object",
+          "required": true,
+          "schema": {
+            "$ref":"#/definitions/CreateUser"
+          }
+        }],
+        "x-amazon-apigateway-integration": {
+          "type": "aws",
+          "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:878533158213:function:apigateway-PostUserLambda-TWU81ABPSSI/invocations",
+          "httpMethod": "POST",
+          "requestTemplates": {
+            "application/json": "{\"body\": $input.json('$')}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "201",
+              "responseParameters": {
+                "method.response.header.Location": "'TODO'"
+              },
+              "responseTemplates": {
+                "application/json": "{}"
+              }
+            } 
+          }
+        }
       } 
+    },
+    "/user/{userId}": {
+      "parameters": [{
+        "name": "userId",
+        "in": "path",
+        "description": "ID of user",
+        "required": true,
+        "default": "",
+        "type": "string"
+      }],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "user retrieved",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws",
+          "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:878533158213:function:apigateway-GetUserLambda-148VEE4CLTXFO/invocations",
+          "httpMethod": "POST",
+          "requestTemplates": {
+            "application/json": "{\"parameters\": {\"userId\": \"$input.params('userId')\"}}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseTemplates": {
+                "application/json": "$input.json('$.body')"
+              }
+            } 
+          }
+        }
+      },
+      "delete": {
+        "responses": {
+          "204": {
+            "description": "User deleted."
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "aws",
+          "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:878533158213:function:apigateway-DeleteUserLambda-YNC75M5Q1V71/invocations",
+          "httpMethod": "POST",
+          "requestTemplates": {
+            "application/json": "{\"parameters\": {\"userId\": \"$input.params('userId')\"}}"
+          },
+          "responses": {
+            "default": {
+              "statusCode": "204",
+              "responseTemplates": {
+                "application/json": "{}"
+              }
+            } 
+          }
+        }
+      }
     }
   },
   "definitions": {

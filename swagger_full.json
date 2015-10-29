@@ -1,59 +1,5 @@
 {
   "paths": {
-    "/user": {
-      "get": {
-        // ....
-      },
-      "post": {
-        "responses": {
-          "201": {
-            "description": "User created",
-            "headers": {
-              "Location": {
-                "description": "Links to the newly created user.",
-                "type": "string"
-              }
-            }
-          }
-        },
-        "parameters": [{
-          "name": "body",
-          "in": "body",
-          "description": "body object",
-          "required": true,
-          "schema": {
-            "$ref":"#/definitions/CreateUser"
-          }
-        }]
-      }
-    },
-    "/user/{userId}": {
-      "parameters": [{
-        "name": "userId",
-        "in": "path",
-        "description": "ID of user",
-        "required": true,
-        "default": "",
-        "type": "string"
-      }],
-      "get": {
-        "responses": {
-          "200": {
-            "description": "user retrieved",
-            "schema": {
-              "$ref": "#/definitions/User"
-            }
-          }
-        }
-      },
-      "delete": {
-        "responses": {
-          "204": {
-            "description": "User deleted."
-          }
-        }
-      }
-    },
     "/user/{userId}/task": {
       "parameters": [{
         "name": "userId",
