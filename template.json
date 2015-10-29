@@ -8,21 +8,17 @@
     },
     "S3Key": {
       "Description": "The location and name of your source code .zip file.",
-      "Type": "String"
+      "Type": "String",
+      "Default": "lambda.zip"
     },
-    "MemorySize": {
-      "Description": "The amount of memory, in MB, that is allocated to your Lambda function.",
-      "Type": "Number",
-      "Default": "128"
-    },
-    "AppId": {
+    "ApiId": {
       "Description": "API Gateway App Id. E.g. 1yc6td9zjj",
       "Type": "String",
       "Default": ""
     }
   },
   "Conditions": {
-    "ApiGatewayDeplyed": {"Fn::Not": [{"Fn::Equals": ["", {"Ref": "AppId"}]}]}
+    "ApiGatewayDeplyed": {"Fn::Not": [{"Fn::Equals": ["", {"Ref": "ApiId"}]}]}
   },
   "Resources": {
     "UserTable": {
@@ -139,7 +135,7 @@
         },
         "Description": "GET /user",
         "Handler": "lambda.getUsers",
-        "MemorySize": {"Ref": "MemorySize"},
+        "MemorySize": 128,
         "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
         "Runtime": "nodejs",
         "Timeout": 3
@@ -152,7 +148,7 @@
         "Action": "lambda:invokeFunction",
         "FunctionName": {"Fn::GetAtt": ["GetUsersLambda", "Arn"]},
         "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "AppId"}, "/*"]]}
+        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
       }
     },
     "PostUserLambda": {
@@ -164,7 +160,7 @@
         },
         "Description": "POST /user",
         "Handler": "lambda.postUser",
-        "MemorySize": {"Ref": "MemorySize"},
+        "MemorySize": 128,
         "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
         "Runtime": "nodejs",
         "Timeout": 3
@@ -177,7 +173,7 @@
         "Action": "lambda:invokeFunction",
         "FunctionName": {"Fn::GetAtt": ["PostUserLambda", "Arn"]},
         "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "AppId"}, "/*"]]}
+        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
       }
     },
     "GetUserLambda": {
@@ -189,7 +185,7 @@
         },
         "Description": "GET /user/:userId",
         "Handler": "lambda.getUser",
-        "MemorySize": {"Ref": "MemorySize"},
+        "MemorySize": 128,
         "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
         "Runtime": "nodejs",
         "Timeout": 3
@@ -202,7 +198,7 @@
         "Action": "lambda:invokeFunction",
         "FunctionName": {"Fn::GetAtt": ["GetUserLambda", "Arn"]},
         "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "AppId"}, "/*"]]}
+        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
       }
     },
     "DeleteUserLambda": {
@@ -214,7 +210,7 @@
         },
         "Description": "DELETE /user/:userId",
         "Handler": "lambda.deleteUser",
-        "MemorySize": {"Ref": "MemorySize"},
+        "MemorySize": 128,
         "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
         "Runtime": "nodejs",
         "Timeout": 3
@@ -227,7 +223,7 @@
         "Action": "lambda:invokeFunction",
         "FunctionName": {"Fn::GetAtt": ["DeleteUserLambda", "Arn"]},
         "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "AppId"}, "/*"]]}
+        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
       }
     },
     "GetTasksLambda": {
@@ -239,7 +235,7 @@
         },
         "Description": "GET /user/:userId/task",
         "Handler": "lambda.getTasks",
-        "MemorySize": {"Ref": "MemorySize"},
+        "MemorySize": 128,
         "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
         "Runtime": "nodejs",
         "Timeout": 3
@@ -252,7 +248,7 @@
         "Action": "lambda:invokeFunction",
         "FunctionName": {"Fn::GetAtt": ["GetTasksLambda", "Arn"]},
         "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "AppId"}, "/*"]]}
+        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
       }
     },
     "PostTaskLambda": {
@@ -264,7 +260,7 @@
         },
         "Description": "POST /user/:userId/task",
         "Handler": "lambda.postTask",
-        "MemorySize": {"Ref": "MemorySize"},
+        "MemorySize": 128,
         "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
         "Runtime": "nodejs",
         "Timeout": 3
@@ -277,7 +273,7 @@
         "Action": "lambda:invokeFunction",
         "FunctionName": {"Fn::GetAtt": ["PostTaskLambda", "Arn"]},
         "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "AppId"}, "/*"]]}
+        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
       }
     },
     "PutTaskLambda": {
@@ -289,7 +285,7 @@
         },
         "Description": "PUT /user/:userId/task/:taskId",
         "Handler": "lambda.putTask",
-        "MemorySize": {"Ref": "MemorySize"},
+        "MemorySize": 128,
         "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
         "Runtime": "nodejs",
         "Timeout": 3
@@ -302,7 +298,7 @@
         "Action": "lambda:invokeFunction",
         "FunctionName": {"Fn::GetAtt": ["PutTaskLambda", "Arn"]},
         "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "AppId"}, "/*"]]}
+        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
       }
     },
     "DeleteTaskLambda": {
@@ -314,7 +310,7 @@
         },
         "Description": "DELETE /user/:userId/task",
         "Handler": "lambda.deleteTask",
-        "MemorySize": {"Ref": "MemorySize"},
+        "MemorySize": 128,
         "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
         "Runtime": "nodejs",
         "Timeout": 3
@@ -327,7 +323,7 @@
         "Action": "lambda:invokeFunction",
         "FunctionName": {"Fn::GetAtt": ["DeleteTaskLambda", "Arn"]},
         "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "AppId"}, "/*"]]}
+        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
       }
     },
     "GetTasksByCategoryLambda": {
@@ -339,7 +335,7 @@
         },
         "Description": "GET /category/:ctageory/task",
         "Handler": "lambda.getTasksByCategory",
-        "MemorySize": {"Ref": "MemorySize"},
+        "MemorySize": 128,
         "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
         "Runtime": "nodejs",
         "Timeout": 3
@@ -352,7 +348,7 @@
         "Action": "lambda:invokeFunction",
         "FunctionName": {"Fn::GetAtt": ["GetTasksByCategoryLambda", "Arn"]},
         "Principal": "apigateway.amazonaws.com",
-        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "AppId"}, "/*"]]}
+        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:us-east-1:", {"Ref": "AWS::AccountId"}, ":", {"Ref": "ApiId"}, "/*"]]}
       }
     }
   },

@@ -2,23 +2,36 @@
 
 The example in this repository reuses the example from chapter 10 in [Amanzon Web Services in Action](https://www.manning.com/books/amazon-web-services-in-action). You can find the code for the original example in the book's [code repository](https://github.com/AWSinAction/code/tree/master/chapter10).
 
-THIS IS STILL WORK IN PROGRESS!
-
 ## Setup
 
-Create cloudformation stack
+clone this repository
 
 ```
-$ aws cloudformation create-stack --stack-name apigateway --template-body file://template.json --capabilities CAPABILITY_IAM --parameters ParameterKey=S3Bucket,ParameterValue=apigateway-mwittig ParameterKey=S3Key,ParameterValue=lambda_v3.zip
+$ git clone git@github.com:AWSinAction/apigateway.git
+$ cd apigateway
 ```
 
-wait until the stack is created
+create the lambda code file (`lambda.zip`)
+
+```
+$ ./bundle.sh
+```
+
+create an S3 bucket and upload the `lambda.zip` file 
+
+create cloudformation stack (replace `$S3Bucket` with your S3 bucket name)
+
+```
+$ aws cloudformation create-stack --stack-name apigateway --template-body file://template.json --capabilities CAPABILITY_IAM --parameters ParameterKey=S3Bucket,ParameterValue=$S3Bucket
+```
+
+wait until the stack is created (you will see something instead of `[]` if it is created)
 
 ```
 $ aws cloudformation describe-stacks --stack-name apigateway --query Stacks[].Outputs
 ```
 
-adjust `swagger.json` to use the correct lambda functions (output of the stack created before)
+adjust `swagger.json` to use the correct lambda function ARNs (e.g. arn:aws:lambda:us-east-1:878533158213:function:apigateway-GetUsersLambda-MQ3D7Q3AAQK) with the outputs of the above `describe-stacks` command
 
 deploy the API Gateway
 
@@ -28,21 +41,29 @@ $ ./aws-api-import.sh --create ../swagger.json
 $ cd ..
 ```
 
-update the CloudFormation template to set the AppId parameter (replace $`AppId`)
+using the CLI to see if ot worked
 
 ```
-$ aws cloudformation update-stack --stack-name apigateway --template-body file://template.json --capabilities CAPABILITY_IAM --parameters ParameterKey=S3Bucket,UsePreviousValue=true ParameterKey=S3Key,UsePreviousValue=true ParameterKey=AppId,ParameterValue=$AppId
+$ aws apigateway get-rest-apis
+```
+
+update the CloudFormation template to set the ApiId parameter (replace $ApiId with the `id` output from above)
+
+```
+$ aws cloudformation update-stack --stack-name apigateway --template-body file://template.json --capabilities CAPABILITY_IAM --parameters ParameterKey=S3Bucket,UsePreviousValue=true ParameterKey=S3Key,UsePreviousValue=true ParameterKey=ApiId,ParameterValue=$ApiId
 ```
 
 deploy to stage
 
 ```
 $ cd aws-apigateway-importer-master/
-$ ./aws-api-import.sh --update API_ID --deploy stage ../swagger.json
+$ ./aws-api-import.sh --update $ApiId --deploy stage ../swagger.json
 $ cd ..
 ```
 
 ## Use the API
+
+the following examples assume that you replace $ApiGatewayEndpoint with `https://$ApiId.execute-api.us-east-1.amazonaws.com/stage/`
 
 create a user
 
