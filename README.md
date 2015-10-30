@@ -8,7 +8,7 @@ clone this repository
 
 ```
 $ git clone git@github.com:AWSinAction/apigateway.git
-$ cd apigateway
+$ cd apigateway/
 ```
 
 create the lambda code file (`lambda.zip`)
