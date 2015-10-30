@@ -18,7 +18,13 @@ $ npm install
 $ ./bundle.sh
 ```
 
-create an S3 bucket and upload the `lambda.zip` file 
+create an S3 bucket in the US East (N. Virginia, `us-east-1`) region and upload the `lambda.zip` file (replace `$S3Bucket` with a S3 bucket name)
+
+```
+export AWS_DEFAULT_REGION=us-east-1
+$ aws s3 mb s3://$S3Bucket
+$ aws s3 cp lambda.zip s3://$S3Bucket/lambda.zip
+```
 
 create cloudformation stack (replace `$S3Bucket` with your S3 bucket name)
 
@@ -32,7 +38,7 @@ wait until the stack is created (you will see something instead of `[]` if it is
 $ aws cloudformation describe-stacks --stack-name apigateway --query Stacks[].Outputs
 ```
 
-replace all occurrences of `$LambdaArn` in `swagger.json` with the ARN from the stack output above (e.g. arn:aws:lambda:us-east-1:YYY:function:apigateway-Lambda-XXX)
+replace **all nine occurrences** of `$LambdaArn` in `swagger.json` with the ARN from the stack output above (e.g. `arn:aws:lambda:us-east-1:YYY:function:apigateway-Lambda-XXX`)
 
 deploy the API Gateway
 
@@ -43,19 +49,19 @@ $ ./aws-api-import.sh --create ../swagger.json
 $ cd ..
 ```
 
-using the CLI to see if ot worked
+using the CLI to see if it worked
 
 ```
 $ aws apigateway get-rest-apis
 ```
 
-update the CloudFormation template to set the ApiId parameter (replace $ApiId with the `id` output from above)
+update the CloudFormation template to set the `ApiId` parameter (replace `$ApiId` with the `id` output from above)
 
 ```
 $ aws cloudformation update-stack --stack-name apigateway --template-body file://template.json --capabilities CAPABILITY_IAM --parameters ParameterKey=S3Bucket,UsePreviousValue=true ParameterKey=S3Key,UsePreviousValue=true ParameterKey=ApiId,ParameterValue=$ApiId
 ```
 
-deploy to stage
+deploy to stage (replace `$ApiId`)
 
 ```
 $ cd aws-apigateway-importer-master/
@@ -65,7 +71,7 @@ $ cd ..
 
 ## Use the API
 
-the following examples assume that you replace $ApiGatewayEndpoint with `$ApiId.execute-api.us-east-1.amazonaws.com`
+the following examples assume that you replace `$ApiGatewayEndpoint` with `$ApiId.execute-api.us-east-1.amazonaws.com`
 
 create a user
 
@@ -94,13 +100,13 @@ curl -vvv -X GET https://$ApiGatewayEndpoint/stage/v1/user/$UserId/task
 mark task as complete
 
 ```
-curl -vvv -X PUT https://$ApiGatewayEndpoint/stage/v1/user/$UserId/task/$taskId
+curl -vvv -X PUT https://$ApiGatewayEndpoint/stage/v1/user/$UserId/task/$TaskId
 ```
 
 delete task
 
 ```
-curl -vvv -X DELETE https://$ApiGatewayEndpoint/stage/v1/user/$UserId/task/$taskId
+curl -vvv -X DELETE https://$ApiGatewayEndpoint/stage/v1/user/$UserId/task/$TaskId
 ```
 
 create a task with a category
@@ -114,4 +120,3 @@ list tasks by category
 ```
 curl -vvv -X GET https://$ApiGatewayEndpoint/stage/v1/category/$Category/task
 ```
-
