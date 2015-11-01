@@ -42,6 +42,10 @@ $ aws cloudformation describe-stacks --stack-name apigateway --query Stacks[].Ou
 
 replace **all nine occurrences** of `$LambdaArn` in `swagger.json` with the ARN from the stack output above (e.g. `arn:aws:lambda:us-east-1:YYY:function:apigateway-Lambda-XXX`)
 
+```
+$ sed -i '.bak' 's/$LambdaArn/arn:aws:lambda:us-east-1:YYY:function:apigateway-Lambda-XXX/g' swagger.json 
+```
+
 deploy the API Gateway
 
 ```
@@ -121,4 +125,18 @@ list tasks by category
 
 ```
 curl -vvv -X GET https://$ApiGatewayEndpoint/stage/v1/category/$Category/task
+```
+
+## Teardown
+
+delete API Gateway (replace `$ApiId`)
+
+```
+$ aws apigateway delete-rest-api --rest-api-id $ApiId
+```
+
+delete CloudFormation stack
+
+```
+$ aws cloudformation delete-stack --stack-name apigateway
 ```
