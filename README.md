@@ -142,3 +142,9 @@ delete CloudFormation stack
 ```
 $ aws cloudformation delete-stack --stack-name apigateway
 ```
+
+delete S3 bucket (replace `$S3Bucket`)
+
+```
+$ aws s3 rb --force s3://$S3Bucket
+```
