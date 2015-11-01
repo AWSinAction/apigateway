@@ -75,9 +75,11 @@ $ ./aws-api-import.sh --update $ApiId --deploy stage ../swagger.json
 $ cd ..
 ```
 
-## Use the API
+## Use the RESTful API
 
 the following examples assume that you replace `$ApiGatewayEndpoint` with `$ApiId.execute-api.us-east-1.amazonaws.com`
+
+*API Gateway does not yet support to pass data from the Lambda function to response headers like `Link` or `Location`*
 
 create a user
 
