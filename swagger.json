@@ -43,7 +43,6 @@
         "x-amazon-apigateway-integration": {
           "type": "aws",
           "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/$LambdaArn/invocations",
-          "httpMethod": "POST",
           "requestTemplates": {
             "application/json": "{\"fun\": \"getUsers\", \"parameters\": {\"limit\": \"$input.params('limit')\", \"next\": \"$input.params('next')\"}}"
           },
@@ -84,7 +83,6 @@
         "x-amazon-apigateway-integration": {
           "type": "aws",
           "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/$LambdaArn/invocations",
-          "httpMethod": "POST",
           "requestTemplates": {
             "application/json": "{\"fun\": \"postUser\", \"body\": $input.json('$')}"
           },
@@ -123,7 +121,6 @@
         "x-amazon-apigateway-integration": {
           "type": "aws",
           "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/$LambdaArn/invocations",
-          "httpMethod": "POST",
           "requestTemplates": {
             "application/json": "{\"fun\": \"getUser\", \"parameters\": {\"userId\": \"$input.params('userId')\"}}"
           },
@@ -146,7 +143,6 @@
         "x-amazon-apigateway-integration": {
           "type": "aws",
           "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/$LambdaArn/invocations",
-          "httpMethod": "POST",
           "requestTemplates": {
             "application/json": "{\"fun\": \"deleteUser\", \"parameters\": {\"userId\": \"$input.params('userId')\"}}"
           },
@@ -242,7 +238,6 @@
         "x-amazon-apigateway-integration": {
           "type": "aws",
           "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/$LambdaArn/invocations",
-          "httpMethod": "POST",
           "requestTemplates": {
             "application/json": "{\"fun\": \"getTasks\", \"parameters\": {\"userId\": \"$input.params('userId')\", \"limit\": \"$input.params('limit')\", \"next\": \"$input.params('next')\", \"overdue\": \"$input.params('overdue')\", \"due\": \"$input.params('due')\", \"withoutdue\": \"$input.params('withoutdue')\", \"futuredue\": \"$input.params('futuredue')\", \"dueafter\": \"$input.params('dueafter')\", \"duebefore\": \"$input.params('duebefore')\", \"category\": \"$input.params('category')\"}}"
           },
@@ -283,7 +278,6 @@
         "x-amazon-apigateway-integration": {
           "type": "aws",
           "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/$LambdaArn/invocations",
-          "httpMethod": "POST",
           "requestTemplates": {
             "application/json": "{\"fun\": \"postTask\", \"body\": $input.json('$'), \"parameters\": {\"userId\": \"$input.params('userId')\"}}"
           },
@@ -326,7 +320,6 @@
         "x-amazon-apigateway-integration": {
           "type": "aws",
           "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/$LambdaArn/invocations",
-          "httpMethod": "POST",
           "requestTemplates": {
             "application/json": "{\"fun\": \"putTask\", \"body\": $input.json('$'), \"parameters\": {\"userId\": \"$input.params('userId')\", \"taskId\": \"$input.params('taskId')\"}}"
           },
@@ -349,7 +342,6 @@
         "x-amazon-apigateway-integration": {
           "type": "aws",
           "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/$LambdaArn/invocations",
-          "httpMethod": "POST",
           "requestTemplates": {
             "application/json": "{\"fun\": \"deleteTask\", \"body\": $input.json('$'), \"parameters\": {\"userId\": \"$input.params('userId')\", \"taskId\": \"$input.params('taskId')\"}}"
           },
@@ -440,7 +432,6 @@
         "x-amazon-apigateway-integration": {
           "type": "aws",
           "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/$LambdaArn/invocations",
-          "httpMethod": "POST",
           "requestTemplates": {
             "application/json": "{\"fun\": \"getTasksByCategory\", \"parameters\": {\"category\": \"$input.params('category')\", \"limit\": \"$input.params('limit')\", \"next\": \"$input.params('next')\", \"overdue\": \"$input.params('overdue')\", \"due\": \"$input.params('due')\", \"withoutdue\": \"$input.params('withoutdue')\", \"futuredue\": \"$input.params('futuredue')\", \"dueafter\": \"$input.params('dueafter')\", \"duebefore\": \"$input.params('duebefore')\"}}"
           },
