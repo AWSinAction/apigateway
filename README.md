@@ -40,6 +40,12 @@ wait until the stack is created (you will see something instead of `[]` if it is
 $ aws cloudformation describe-stacks --stack-name apigateway --query Stacks[].Outputs
 ```
 
+replace **all nine occurrences** of `$AWSRegion` in `swagger.json` with the region that you are creating your API and Lamdba in
+
+```
+$ sed -i '.bak' 's/$AWSRegion/us-west-2/g' swagger.json 
+```
+
 replace **all nine occurrences** of `$LambdaArn` in `swagger.json` with the ARN from the stack output above (e.g. `arn:aws:lambda:us-east-1:YYY:function:apigateway-Lambda-XXX`)
 
 ```
