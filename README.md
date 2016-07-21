@@ -6,6 +6,14 @@ Use [Swagger UI](http://petstore.swagger.io/?url=https://raw.githubusercontent.c
 
 ## Setup
 
+You have multiple options to setup the example:
+
+1. Using CloudFormation
+2. Using CloudFormation, [Swagger / OpenAPI Specification](https://openapis.org/specification) and the AWS CLI
+3. Using CloudFormation, [Swagger / OpenAPI Specification](https://openapis.org/specification) and the [Amazon API Gateway Importer](https://github.com/awslabs/aws-apigateway-importer)
+
+### Using CloudFormation
+
 clone this repository
 
 ```
@@ -16,7 +24,48 @@ $ cd apigateway/
 create the lambda code file (`lambda.zip`)
 
 ```
-$ npm install
+$ npm install --production
+$ ./bundle.sh
+```
+
+create an S3 bucket in the US East (N. Virginia, `us-east-1`) region and upload the `lambda.zip` file (replace `$S3Bucket` with a S3 bucket name)
+
+```
+$ export AWS_DEFAULT_REGION=us-east-1
+$ export S3Bucket=mwittig-apigateway
+$ aws s3 mb s3://$S3Bucket
+$ aws s3 cp lambda.zip s3://$S3Bucket/lambda.zip
+```
+
+create cloudformation stack (replace `$S3Bucket` with your S3 bucket name)
+
+```
+$ aws cloudformation create-stack --stack-name apigateway --template-body file://template_with_api.json --capabilities CAPABILITY_IAM --parameters ParameterKey=S3Bucket,ParameterValue=$S3Bucket
+```
+
+wait until the stack is created (you will see something instead of `[]` if it is created)
+
+```
+$ aws cloudformation describe-stacks --stack-name apigateway --query Stacks[].Outputs
+```
+
+### Using CloudFormation, Swagger / OpenAPI Specification and the AWS CLI
+
+TODO
+
+### Using CloudFormation, Swagger / OpenAPI Specification and the Amazon API Gateway Importer
+
+clone this repository
+
+```
+$ git clone git@github.com:AWSinAction/apigateway.git
+$ cd apigateway/
+```
+
+create the lambda code file (`lambda.zip`)
+
+```
+$ npm install --production
 $ ./bundle.sh
 ```
 

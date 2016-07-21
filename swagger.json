@@ -328,7 +328,7 @@
           "uri": "arn:aws:apigateway:$AWSRegion:lambda:path/2015-03-31/functions/$LambdaArn/invocations",
           "httpMethod": "POST",
           "requestTemplates": {
-            "application/json": "{\"fun\": \"putTask\", \"body\": $input.json('$'), \"parameters\": {\"userId\": \"$input.params('userId')\", \"taskId\": \"$input.params('taskId')\"}}"
+            "application/json": "{\"fun\": \"putTask\", \"parameters\": {\"userId\": \"$input.params('userId')\", \"taskId\": \"$input.params('taskId')\"}}"
           },
           "responses": {
             "default": {
