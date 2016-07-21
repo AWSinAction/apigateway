@@ -573,7 +573,7 @@
         "PathPart": "{taskId}"
       }
     },
-    "UserTasksPut": {
+    "UserTaskPut": {
       "Type": "AWS::ApiGateway::Method",
       "Properties": {
         "RestApiId": {"Ref": "RestApi"},
@@ -642,10 +642,6 @@
       }
     },
 
-
-
-
-
     "CategoriesResource": {
       "Type": "AWS::ApiGateway::Resource",
       "Properties": {
@@ -672,6 +668,53 @@
         "PathPart": "task"
       }
     },
+    "CategoryTasksGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ResourceId": {"Ref": "CategoryTasksResource"},
+        "HttpMethod": "GET",
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "Type": "AWS",
+          "IntegrationHttpMethod": "POST",
+          "Uri": {"Fn::Join" : ["", ["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", {"Fn::GetAtt": ["Lambda", "Arn"]}, "/invocations"]]},
+          "IntegrationResponses": [{
+            "ResponseTemplates": {
+              "application/json": "$input.json('$.body')"
+            },
+            "ResponseParameters": {
+              "method.response.header.Link": "integration.response.body.headers.next"
+            },
+            "StatusCode": 200
+          }],
+          "PassthroughBehavior": "NEVER",
+          "RequestTemplates": {
+            "application/json": "{\"fun\": \"getTasksByCategory\", \"parameters\": {\"category\": \"$input.params('category')\", \"limit\": \"$input.params('limit')\", \"next\": \"$input.params('next')\", \"overdue\": \"$input.params('overdue')\", \"due\": \"$input.params('due')\", \"withoutdue\": \"$input.params('withoutdue')\", \"futuredue\": \"$input.params('futuredue')\", \"dueafter\": \"$input.params('dueafter')\", \"duebefore\": \"$input.params('duebefore')\"}}"
+          }
+        },
+        "RequestParameters": {
+          "method.request.path.category": true,
+          "method.request.querystring.limit": false,
+          "method.request.querystring.next": false,
+          "method.request.querystring.overdue": false,
+          "method.request.querystring.due": false,
+          "method.request.querystring.withoutdue": false,
+          "method.request.querystring.futuredue": false,
+          "method.request.querystring.dueafter": false,
+          "method.request.querystring.duebefore": false
+        },
+        "MethodResponses": [{
+          "ResponseModels": {
+            "application/json": {"Ref": "TasksModel"}
+          },
+          "ResponseParameters": {
+            "method.response.header.Link": true
+          },
+          "StatusCode": 200
+        }]
+      }
+    },
 
     "RestApiDeployment": {
       "Type": "AWS::ApiGateway::Deployment",
@@ -679,12 +722,12 @@
         "RestApiId": {"Ref": "RestApi"},
         "StageName": "v1"
       },
-      "DependsOn": ["UsersGet", "UsersPost", "UserGet", "UserDelete"]
+      "DependsOn": ["UsersGet", "UsersPost", "UserGet", "UserDelete", "UserTasksGet", "UserTasksPost", "UserTaskPut", "UserTaskDelete", "CategoryTasksGet"]
     }
   },
   "Outputs": {
-    "LambdaArn": {
-      "Value": {"Fn::GetAtt": ["Lambda", "Arn"]}
+    "ApiId": {
+      "Value": {"Ref": "RestApi"}
     }
   }
 }
