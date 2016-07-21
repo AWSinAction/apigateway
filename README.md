@@ -6,6 +6,14 @@ Use [Swagger UI](http://petstore.swagger.io/?url=https://raw.githubusercontent.c
 
 ## Setup
 
+You have multiple options to setup the example:
+
+1. Using CloudFormation
+2. Using CloudFormation, [Swagger / OpenAPI Specification](https://openapis.org/specification) and the AWS CLI
+3. Using CloudFormation, [Swagger / OpenAPI Specification](https://openapis.org/specification) and the [Amazon API Gateway Importer](https://github.com/awslabs/aws-apigateway-importer)
+
+### Using CloudFormation
+
 clone this repository
 
 ```
@@ -16,7 +24,58 @@ $ cd apigateway/
 create the lambda code file (`lambda.zip`)
 
 ```
-$ npm install
+$ npm install --production
+$ ./bundle.sh
+```
+
+create an S3 bucket in the US East (N. Virginia, `us-east-1`) region and upload the `lambda.zip` file (replace `$S3Bucket` with a S3 bucket name)
+
+```
+$ export AWS_DEFAULT_REGION=us-east-1
+$ export S3Bucket=$(whoami)-apigateway
+$ aws s3 mb s3://$S3Bucket
+$ aws s3 cp lambda.zip s3://$S3Bucket/lambda.zip
+```
+
+create cloudformation stack (replace `$S3Bucket` with your S3 bucket name)
+
+```
+$ aws cloudformation create-stack --stack-name apigateway --template-body file://template_with_api.json --capabilities CAPABILITY_IAM --parameters ParameterKey=S3Bucket,ParameterValue=$S3Bucket
+```
+
+wait until the stack is created (`CREATE_COMPLETE`)
+
+```
+$ aws cloudformation describe-stacks --stack-name apigateway --query Stacks[0].StackStatus
+```
+
+get the `$ApiId`
+
+```
+$ aws cloudformation describe-stacks --stack-name apigateway --query Stacks[0].Outputs
+```
+
+set the `$ApiGatewayEndpoint` environment variable (replace `$ApiId`)
+
+```
+export ApiGatewayEndpoint="$ApiId.execute-api.us-east-1.amazonaws.com/v1"
+```
+
+and now [use the RESTful API](#use-the-restful-api).
+
+### Using CloudFormation, Swagger / OpenAPI Specification and the Amazon API Gateway Importer
+
+clone this repository
+
+```
+$ git clone git@github.com:AWSinAction/apigateway.git
+$ cd apigateway/
+```
+
+create the lambda code file (`lambda.zip`)
+
+```
+$ npm install --production
 $ ./bundle.sh
 ```
 
@@ -34,22 +93,28 @@ create cloudformation stack (replace `$S3Bucket` with your S3 bucket name)
 $ aws cloudformation create-stack --stack-name apigateway --template-body file://template.json --capabilities CAPABILITY_IAM --parameters ParameterKey=S3Bucket,ParameterValue=$S3Bucket
 ```
 
-wait until the stack is created (you will see something instead of `[]` if it is created)
+wait until the stack is created (`CREATE_COMPLETE`)
 
 ```
-$ aws cloudformation describe-stacks --stack-name apigateway --query Stacks[].Outputs
+$ aws cloudformation describe-stacks --stack-name apigateway --query Stacks[0].StackStatus
 ```
 
 replace **all nine occurrences** of `$AWSRegion` in `swagger.json` with the region that you are creating your API and Lamdba in
 
 ```
-$ sed -i '.bak' 's/$AWSRegion/us-west-2/g' swagger.json 
+$ sed -i '.bak' 's/$AWSRegion/us-east-1/g' swagger.json
+```
+
+get the `LambdaArn`
+
+```
+$ aws cloudformation describe-stacks --stack-name apigateway --query Stacks[0].Outputs
 ```
 
 replace **all nine occurrences** of `$LambdaArn` in `swagger.json` with the ARN from the stack output above (e.g. `arn:aws:lambda:us-east-1:YYY:function:apigateway-Lambda-XXX`)
 
 ```
-$ sed -i '.bak' 's/$LambdaArn/arn:aws:lambda:us-east-1:YYY:function:apigateway-Lambda-XXX/g' swagger.json 
+$ sed -i '.bak' 's/$LambdaArn/arn:aws:lambda:us-east-1:YYY:function:apigateway-Lambda-XXX/g' swagger.json
 ```
 
 deploy the API Gateway
@@ -81,61 +146,83 @@ $ ./aws-api-import.sh --update $ApiId --deploy stage ../swagger.json
 $ cd ..
 ```
 
+set the `$ApiGatewayEndpoint` environment variable (replace `$ApiId`)
+
+```
+export ApiGatewayEndpoint="$ApiId.execute-api.us-east-1.amazonaws.com/stage/v1"
+```
+
+and now [use the RESTful API](#use-the-restful-api).
+
 ## Use the RESTful API
 
 the following examples assume that you replace `$ApiGatewayEndpoint` with `$ApiId.execute-api.us-east-1.amazonaws.com`
 
-*API Gateway does not yet support to pass data from the Lambda function to response headers like `Link` or `Location`*
-
 create a user
 
 ```
-curl -vvv -X POST -d '{"email": "your@mail.com", "phone": "0123456789"}' -H "Content-Type: application/json" https://$ApiGatewayEndpoint/stage/v1/user
+curl -vvv -X POST -d '{"email": "your@mail.com", "phone": "0123456789"}' -H "Content-Type: application/json" https://$ApiGatewayEndpoint/user
 ```
 
 list users
 
 ```
-curl -vvv -X GET https://$ApiGatewayEndpoint/stage/v1/user
+curl -vvv -X GET https://$ApiGatewayEndpoint/user
 ```
 
 create a task
 
 ```
-curl -vvv -X POST -d '{"description": "test task"}' -H "Content-Type: application/json" https://$ApiGatewayEndpoint/stage/v1/user/$UserId/task
+curl -vvv -X POST -d '{"description": "test task"}' -H "Content-Type: application/json" https://$ApiGatewayEndpoint/user/$UserId/task
 ```
 
 list tasks
 
 ```
-curl -vvv -X GET https://$ApiGatewayEndpoint/stage/v1/user/$UserId/task
+curl -vvv -X GET https://$ApiGatewayEndpoint/user/$UserId/task
 ```
 
 mark task as complete
 
 ```
-curl -vvv -X PUT https://$ApiGatewayEndpoint/stage/v1/user/$UserId/task/$TaskId
+curl -vvv -X PUT https://$ApiGatewayEndpoint/user/$UserId/task/$TaskId
 ```
 
 delete task
 
 ```
-curl -vvv -X DELETE https://$ApiGatewayEndpoint/stage/v1/user/$UserId/task/$TaskId
+curl -vvv -X DELETE https://$ApiGatewayEndpoint/user/$UserId/task/$TaskId
 ```
 
 create a task with a category
 
 ```
-curl -vvv -X POST -d '{"description": "test task", "category": "test"}' -H "Content-Type: application/json" https://$ApiGatewayEndpoint/stage/v1/user/$UserId/task
+curl -vvv -X POST -d '{"description": "test task", "category": "test"}' -H "Content-Type: application/json" https://$ApiGatewayEndpoint/user/$UserId/task
 
 ```
 list tasks by category
 
 ```
-curl -vvv -X GET https://$ApiGatewayEndpoint/stage/v1/category/$Category/task
+curl -vvv -X GET https://$ApiGatewayEndpoint/category/$Category/task
 ```
 
 ## Teardown
+
+### Using CloudFormation
+
+delete CloudFormation stack
+
+```
+$ aws cloudformation delete-stack --stack-name apigateway
+```
+
+delete S3 bucket (replace `$S3Bucket`)
+
+```
+$ aws s3 rb --force s3://$S3Bucket
+```
+
+### Using CloudFormation, Swagger / OpenAPI Specification and the Amazon API Gateway Importer
 
 delete API Gateway (replace `$ApiId`)
 

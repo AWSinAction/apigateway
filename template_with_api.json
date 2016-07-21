@@ -1,0 +1,733 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Lambda and API Gateway",
+  "Parameters": {
+    "S3Bucket": {
+      "Description": "The name of the S3 bucket that contains the source code of your Lambda function.",
+      "Type": "String"
+    },
+    "S3Key": {
+      "Description": "The location and name of your source code .zip file.",
+      "Type": "String",
+      "Default": "lambda.zip"
+    }
+  },
+  "Resources": {
+    "UserTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "AttributeDefinitions": [{
+          "AttributeName": "uid",
+          "AttributeType": "S"
+        }],
+        "KeySchema": [{
+          "AttributeName": "uid",
+          "KeyType": "HASH"
+        }],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 1,
+          "WriteCapacityUnits": 1
+        },
+        "TableName": "todo-user"
+      }
+    },
+    "TaskTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "AttributeDefinitions": [{
+          "AttributeName": "uid",
+          "AttributeType": "S"
+        }, {
+          "AttributeName": "tid",
+          "AttributeType": "N"
+        }, {
+          "AttributeName": "category",
+          "AttributeType": "S"
+        }],
+        "KeySchema": [{
+          "AttributeName": "uid",
+          "KeyType": "HASH"
+        }, {
+          "AttributeName": "tid",
+          "KeyType": "RANGE"
+        }],
+        "GlobalSecondaryIndexes": [{
+          "IndexName": "category-index",
+          "KeySchema": [{
+            "AttributeName": "category",
+            "KeyType": "HASH"
+          }, {
+            "AttributeName": "tid",
+            "KeyType": "RANGE"
+          }],
+          "Projection": {
+            "ProjectionType": "ALL"
+          },
+          "ProvisionedThroughput": {
+            "ReadCapacityUnits": 1,
+            "WriteCapacityUnits": 1
+          }
+        }],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 1,
+          "WriteCapacityUnits": 1
+        },
+        "TableName": "todo-task"
+      }
+    },
+    "LambdaRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "lambda.amazonaws.com"
+            },
+            "Action": ["sts:AssumeRole"]
+          }]
+        },
+        "Path": "/",
+        "Policies": [{
+          "PolicyName": "logs",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Effect": "Allow",
+              "Action": [
+                 "logs:*"
+              ],
+              "Resource": "arn:aws:logs:*:*:*"
+            }]
+          }
+        }, {
+          "PolicyName": "dynamodb",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Sid": "1",
+              "Effect": "Allow",
+              "Action": ["dynamodb:Scan", "dynamodb:PutItem", "dynamodb:GetItem", "dynamodb:DeleteItem", "dynamodb:Query", "dynamodb:UpdateItem"],
+              "Resource": [
+                {"Fn::Join" : ["", ["arn:aws:dynamodb:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":table/todo-user*"]]},
+                {"Fn::Join" : ["", ["arn:aws:dynamodb:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":table/todo-task*"]]}
+              ]
+            }]
+          }
+        }]
+      }
+    },
+    "Lambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {"Ref": "S3Bucket"},
+          "S3Key": {"Ref": "S3Key"}
+        },
+        "Description": "generic handler",
+        "Handler": "lambda.handler",
+        "MemorySize": 128,
+        "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
+        "Runtime": "nodejs4.3",
+        "Timeout": 3
+      }
+    },
+    "LambdaPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:invokeFunction",
+        "FunctionName": {"Fn::GetAtt": ["Lambda", "Arn"]},
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":", {"Ref": "RestApi"}, "/*"]]}
+      }
+    },
+
+    "RestApi": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Name": "API Gateway ToDo"
+      }
+    },
+
+    "UserModel": {
+      "Type": "AWS::ApiGateway::Model",
+      "Properties": {
+        "ContentType": "application/json",
+        "Name": "User",
+        "RestApiId": {"Ref": "RestApi"},
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "title": "User",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "uid": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "phone": {
+              "type": "string"
+            }
+          },
+          "required": ["uid", "email", "phone"]
+        }
+      }
+    },
+    "UsersModel": {
+      "Type": "AWS::ApiGateway::Model",
+      "Properties": {
+        "ContentType": "application/json",
+        "Name": "Users",
+        "RestApiId": {"Ref": "RestApi"},
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "title": "Users",
+          "type": "array",
+          "items": {
+            "$ref": {"Fn::Join": ["", ["https://apigateway.amazonaws.com/restapis/", {"Ref": "RestApi"}, "/models/", {"Ref": "UserModel"}]]}
+          }
+        }
+      }
+    },
+    "CreateUserModel": {
+      "Type": "AWS::ApiGateway::Model",
+      "Properties": {
+        "ContentType": "application/json",
+        "Name": "CreateUser",
+        "RestApiId": {"Ref": "RestApi"},
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "title": "CreateUser",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "email": {
+              "type": "string"
+            },
+            "phone": {
+              "type": "string"
+            }
+          },
+          "required": ["email", "phone"]
+        }
+      }
+    },
+    "TaskModel": {
+      "Type": "AWS::ApiGateway::Model",
+      "Properties": {
+        "ContentType": "application/json",
+        "Name": "Task",
+        "RestApiId": {"Ref": "RestApi"},
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "title": "Task",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "tid": {
+              "type": "integer"
+            },
+            "description": {
+              "type": "string"
+            },
+            "created": {
+              "type": "integer"
+            },
+            "due": {
+              "type": "integer"
+            },
+            "category": {
+              "type": "string"
+            },
+            "completed": {
+              "type": "integer"
+            }
+          },
+          "required": ["tid", "description", "created"]
+        }
+      }
+    },
+    "TasksModel": {
+      "Type": "AWS::ApiGateway::Model",
+      "Properties": {
+        "ContentType": "application/json",
+        "Name": "Tasks",
+        "RestApiId": {"Ref": "RestApi"},
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "title": "Tasks",
+          "type": "array",
+          "items": {
+            "$ref": {"Fn::Join": ["", ["https://apigateway.amazonaws.com/restapis/", {"Ref": "RestApi"}, "/models/", {"Ref": "TaskModel"}]]}
+          }
+        }
+      }
+    },
+    "CreateTaskModel": {
+      "Type": "AWS::ApiGateway::Model",
+      "Properties": {
+        "ContentType": "application/json",
+        "Name": "CreateTask",
+        "RestApiId": {"Ref": "RestApi"},
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "title": "CreateTask",
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "due": {
+              "type": "integer"
+            },
+            "category": {
+              "type": "string"
+            }
+          },
+          "required": ["description"]
+        }
+      }
+    },
+
+    "UsersResource": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ParentId": {"Fn::GetAtt": ["RestApi", "RootResourceId"]},
+        "PathPart": "user"
+      }
+    },
+    "UsersGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ResourceId": {"Ref": "UsersResource"},
+        "HttpMethod": "GET",
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "Type": "AWS",
+          "IntegrationHttpMethod": "POST",
+          "Uri": {"Fn::Join" : ["", ["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", {"Fn::GetAtt": ["Lambda", "Arn"]}, "/invocations"]]},
+          "IntegrationResponses": [{
+            "ResponseTemplates": {
+              "application/json": "$input.json('$.body')"
+            },
+            "ResponseParameters": {
+              "method.response.header.Link": "integration.response.body.headers.next"
+            },
+            "StatusCode": 200
+          }],
+          "PassthroughBehavior": "NEVER",
+          "RequestTemplates": {
+            "application/json": "{\"fun\": \"getUsers\", \"parameters\": {\"limit\": \"$input.params('limit')\", \"next\": \"$input.params('next')\"}}"
+          }
+        },
+        "RequestParameters": {
+          "method.request.querystring.limit": false,
+          "method.request.querystring.next": false
+        },
+        "MethodResponses": [{
+          "ResponseModels": {
+            "application/json": {"Ref": "UsersModel"}
+          },
+          "ResponseParameters": {
+            "method.response.header.Link": true
+          },
+          "StatusCode": 200
+        }]
+      }
+    },
+    "UsersPost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ResourceId": {"Ref": "UsersResource"},
+        "HttpMethod": "POST",
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "Type": "AWS",
+          "IntegrationHttpMethod": "POST",
+          "Uri": {"Fn::Join" : ["", ["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", {"Fn::GetAtt": ["Lambda", "Arn"]}, "/invocations"]]},
+          "IntegrationResponses": [{
+            "ResponseTemplates": {
+              "application/json": "{}"
+            },
+            "ResponseParameters": {
+              "method.response.header.Location": "integration.response.body.headers.uid"
+            },
+            "StatusCode": 201
+          }],
+          "PassthroughBehavior": "NEVER",
+          "RequestTemplates": {
+            "application/json": "{\"fun\": \"postUser\", \"body\": $input.json('$')}"
+          }
+        },
+        "RequestModels": {
+          "application/json": {"Ref": "CreateUserModel"}
+        },
+        "MethodResponses": [{
+          "ResponseModels": {
+            "application/json": "Empty"
+          },
+          "ResponseParameters": {
+            "method.response.header.Location": true
+          },
+          "StatusCode": 201
+        }]
+      }
+    },
+
+    "UserResource": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ParentId": {"Ref": "UsersResource"},
+        "PathPart": "{userId}"
+      }
+    },
+    "UserGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ResourceId": {"Ref": "UserResource"},
+        "HttpMethod": "GET",
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "Type": "AWS",
+          "IntegrationHttpMethod": "POST",
+          "Uri": {"Fn::Join" : ["", ["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", {"Fn::GetAtt": ["Lambda", "Arn"]}, "/invocations"]]},
+          "IntegrationResponses": [{
+            "ResponseTemplates": {
+              "application/json": "$input.json('$.body')"
+            },
+            "StatusCode": 200
+          }, {
+            "SelectionPattern": "^not found.*",
+            "ResponseTemplates": {
+              "application/json": "{}"
+            },
+            "StatusCode": 404
+          }],
+          "PassthroughBehavior": "NEVER",
+          "RequestTemplates": {
+            "application/json": "{\"fun\": \"getUser\", \"parameters\": {\"userId\": \"$input.params('userId')\"}}"
+          }
+        },
+        "RequestParameters": {
+          "method.request.path.userId": true
+        },
+        "MethodResponses": [{
+          "ResponseModels": {
+            "application/json": {"Ref": "UserModel"}
+          },
+          "StatusCode": 200
+        }, {
+          "ResponseModels": {
+            "application/json": "Empty"
+          },
+          "StatusCode": 404
+        }]
+      }
+    },
+    "UserDelete": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ResourceId": {"Ref": "UserResource"},
+        "HttpMethod": "DELETE",
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "Type": "AWS",
+          "IntegrationHttpMethod": "POST",
+          "Uri": {"Fn::Join" : ["", ["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", {"Fn::GetAtt": ["Lambda", "Arn"]}, "/invocations"]]},
+          "IntegrationResponses": [{
+            "ResponseTemplates": {
+              "application/json": "{}"
+            },
+            "StatusCode": 204
+          }],
+          "PassthroughBehavior": "NEVER",
+          "RequestTemplates": {
+            "application/json": "{\"fun\": \"deleteUser\", \"parameters\": {\"userId\": \"$input.params('userId')\"}}"
+          }
+        },
+        "RequestParameters": {
+          "method.request.path.userId": true
+        },
+        "MethodResponses": [{
+          "ResponseModels": {
+            "application/json": "Empty"
+          },
+          "StatusCode": 204
+        }]
+      }
+    },
+
+    "UserTasksResource": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ParentId": {"Ref": "UserResource"},
+        "PathPart": "task"
+      }
+    },
+    "UserTasksGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ResourceId": {"Ref": "UserTasksResource"},
+        "HttpMethod": "GET",
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "Type": "AWS",
+          "IntegrationHttpMethod": "POST",
+          "Uri": {"Fn::Join" : ["", ["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", {"Fn::GetAtt": ["Lambda", "Arn"]}, "/invocations"]]},
+          "IntegrationResponses": [{
+            "ResponseTemplates": {
+              "application/json": "$input.json('$.body')"
+            },
+            "ResponseParameters": {
+              "method.response.header.Link": "integration.response.body.headers.next"
+            },
+            "StatusCode": 200
+          }],
+          "PassthroughBehavior": "NEVER",
+          "RequestTemplates": {
+            "application/json": "{\"fun\": \"getTasks\", \"parameters\": {\"userId\": \"$input.params('userId')\", \"limit\": \"$input.params('limit')\", \"next\": \"$input.params('next')\", \"overdue\": \"$input.params('overdue')\", \"due\": \"$input.params('due')\", \"withoutdue\": \"$input.params('withoutdue')\", \"futuredue\": \"$input.params('futuredue')\", \"dueafter\": \"$input.params('dueafter')\", \"duebefore\": \"$input.params('duebefore')\", \"category\": \"$input.params('category')\"}}"
+          }
+        },
+        "RequestParameters": {
+          "method.request.path.userId": true,
+          "method.request.querystring.limit": false,
+          "method.request.querystring.next": false,
+          "method.request.querystring.overdue": false,
+          "method.request.querystring.due": false,
+          "method.request.querystring.withoutdue": false,
+          "method.request.querystring.futuredue": false,
+          "method.request.querystring.dueafter": false,
+          "method.request.querystring.duebefore": false,
+          "method.request.querystring.category": false
+        },
+        "MethodResponses": [{
+          "ResponseModels": {
+            "application/json": {"Ref": "TasksModel"}
+          },
+          "ResponseParameters": {
+            "method.response.header.Link": true
+          },
+          "StatusCode": 200
+        }]
+      }
+    },
+    "UserTasksPost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ResourceId": {"Ref": "UserTasksResource"},
+        "HttpMethod": "POST",
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "Type": "AWS",
+          "IntegrationHttpMethod": "POST",
+          "Uri": {"Fn::Join" : ["", ["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", {"Fn::GetAtt": ["Lambda", "Arn"]}, "/invocations"]]},
+          "IntegrationResponses": [{
+            "ResponseTemplates": {
+              "application/json": "{}"
+            },
+            "ResponseParameters": {
+              "method.response.header.Location": "integration.response.body.headers.tid"
+            },
+            "StatusCode": 201
+          }],
+          "PassthroughBehavior": "NEVER",
+          "RequestTemplates": {
+            "application/json": "{\"fun\": \"postTask\", \"body\": $input.json('$'), \"parameters\": {\"userId\": \"$input.params('userId')\"}}"
+          }
+        },
+        "RequestParameters": {
+          "method.request.path.userId": true
+        },
+        "RequestModels": {
+          "application/json": {"Ref": "CreateTaskModel"}
+        },
+        "MethodResponses": [{
+          "ResponseModels": {
+            "application/json": "Empty"
+          },
+          "ResponseParameters": {
+            "method.response.header.Location": true
+          },
+          "StatusCode": 201
+        }]
+      }
+    },
+
+    "UserTaskResource": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ParentId": {"Ref": "UserTasksResource"},
+        "PathPart": "{taskId}"
+      }
+    },
+    "UserTaskPut": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ResourceId": {"Ref": "UserTaskResource"},
+        "HttpMethod": "PUT",
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "Type": "AWS",
+          "IntegrationHttpMethod": "POST",
+          "Uri": {"Fn::Join" : ["", ["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", {"Fn::GetAtt": ["Lambda", "Arn"]}, "/invocations"]]},
+          "IntegrationResponses": [{
+            "ResponseTemplates": {
+              "application/json": "{}"
+            },
+            "StatusCode": 204
+          }],
+          "PassthroughBehavior": "NEVER",
+          "RequestTemplates": {
+            "application/json": "{\"fun\": \"putTask\", \"parameters\": {\"userId\": \"$input.params('userId')\", \"taskId\": \"$input.params('taskId')\"}}"
+          }
+        },
+        "RequestParameters": {
+          "method.request.path.userId": true,
+          "method.request.path.taskId": true
+        },
+        "MethodResponses": [{
+          "ResponseModels": {
+            "application/json": "Empty"
+          },
+          "StatusCode": 204
+        }]
+      }
+    },
+    "UserTaskDelete": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ResourceId": {"Ref": "UserTaskResource"},
+        "HttpMethod": "DELETE",
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "Type": "AWS",
+          "IntegrationHttpMethod": "POST",
+          "Uri": {"Fn::Join" : ["", ["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", {"Fn::GetAtt": ["Lambda", "Arn"]}, "/invocations"]]},
+          "IntegrationResponses": [{
+            "ResponseTemplates": {
+              "application/json": "{}"
+            },
+            "StatusCode": 204
+          }],
+          "PassthroughBehavior": "NEVER",
+          "RequestTemplates": {
+            "application/json": "{\"fun\": \"deleteTask\", \"body\": $input.json('$'), \"parameters\": {\"userId\": \"$input.params('userId')\", \"taskId\": \"$input.params('taskId')\"}}"
+          }
+        },
+        "RequestParameters": {
+          "method.request.path.userId": true,
+          "method.request.path.taskId": true
+        },
+        "MethodResponses": [{
+          "ResponseModels": {
+            "application/json": "Empty"
+          },
+          "StatusCode": 204
+        }]
+      }
+    },
+
+    "CategoriesResource": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ParentId": {"Fn::GetAtt": ["RestApi", "RootResourceId"]},
+        "PathPart": "category"
+      }
+    },
+
+    "CategoryResource": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ParentId": {"Ref": "CategoriesResource"},
+        "PathPart": "{category}"
+      }
+    },
+
+    "CategoryTasksResource": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ParentId": {"Ref": "CategoryResource"},
+        "PathPart": "task"
+      }
+    },
+    "CategoryTasksGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "ResourceId": {"Ref": "CategoryTasksResource"},
+        "HttpMethod": "GET",
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "Type": "AWS",
+          "IntegrationHttpMethod": "POST",
+          "Uri": {"Fn::Join" : ["", ["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", {"Fn::GetAtt": ["Lambda", "Arn"]}, "/invocations"]]},
+          "IntegrationResponses": [{
+            "ResponseTemplates": {
+              "application/json": "$input.json('$.body')"
+            },
+            "ResponseParameters": {
+              "method.response.header.Link": "integration.response.body.headers.next"
+            },
+            "StatusCode": 200
+          }],
+          "PassthroughBehavior": "NEVER",
+          "RequestTemplates": {
+            "application/json": "{\"fun\": \"getTasksByCategory\", \"parameters\": {\"category\": \"$input.params('category')\", \"limit\": \"$input.params('limit')\", \"next\": \"$input.params('next')\", \"overdue\": \"$input.params('overdue')\", \"due\": \"$input.params('due')\", \"withoutdue\": \"$input.params('withoutdue')\", \"futuredue\": \"$input.params('futuredue')\", \"dueafter\": \"$input.params('dueafter')\", \"duebefore\": \"$input.params('duebefore')\"}}"
+          }
+        },
+        "RequestParameters": {
+          "method.request.path.category": true,
+          "method.request.querystring.limit": false,
+          "method.request.querystring.next": false,
+          "method.request.querystring.overdue": false,
+          "method.request.querystring.due": false,
+          "method.request.querystring.withoutdue": false,
+          "method.request.querystring.futuredue": false,
+          "method.request.querystring.dueafter": false,
+          "method.request.querystring.duebefore": false
+        },
+        "MethodResponses": [{
+          "ResponseModels": {
+            "application/json": {"Ref": "TasksModel"}
+          },
+          "ResponseParameters": {
+            "method.response.header.Link": true
+          },
+          "StatusCode": 200
+        }]
+      }
+    },
+
+    "RestApiDeployment": {
+      "Type": "AWS::ApiGateway::Deployment",
+      "Properties": {
+        "RestApiId": {"Ref": "RestApi"},
+        "StageName": "v1"
+      },
+      "DependsOn": ["UsersGet", "UsersPost", "UserGet", "UserDelete", "UserTasksGet", "UserTasksPost", "UserTaskPut", "UserTaskDelete", "CategoryTasksGet"]
+    }
+  },
+  "Outputs": {
+    "ApiId": {
+      "Value": {"Ref": "RestApi"}
+    }
+  }
+}

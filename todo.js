@@ -29,7 +29,7 @@ function mapUserItem(item) {
   };
 }
 
-exports.getUsers = function(event, context) {
+exports.getUsers = function(event, cb) {
   console.log("getUsers", JSON.stringify(event));
   var params = {
     "TableName": "todo-user",
@@ -44,7 +44,7 @@ exports.getUsers = function(event, context) {
   }
   db.scan(params, function(err, data) {
     if (err) {
-      context.fail(err);
+      cb(err);
     } else {
       var res = {
         "body": data.Items.map(mapUserItem)
@@ -52,12 +52,12 @@ exports.getUsers = function(event, context) {
       if (data.LastEvaluatedKey !== undefined) {
         res.headers = {"next": data.LastEvaluatedKey.uid.S};
       }
-      context.succeed(res);
+      cb(null, res);
     }
   });
 };
 
-exports.postUser = function(event, context) {
+exports.postUser = function(event, cb) {
   console.log("postUser", JSON.stringify(event));
   var uid = uuid.v4();
   var params = {
@@ -77,14 +77,14 @@ exports.postUser = function(event, context) {
   };
   db.putItem(params, function(err) {
     if (err) {
-      context.fail(err);
+      cb(err);
     } else {
-      context.succeed({"headers": {"uid": uid}, "body": mapUserItem(params.Item)});
+      cb(null, {"headers": {"uid": uid}, "body": mapUserItem(params.Item)});
     }
   });
 };
 
-exports.getUser = function(event, context) {
+exports.getUser = function(event, cb) {
   console.log("getUser", JSON.stringify(event));
   var params = {
     "Key": {
@@ -96,18 +96,18 @@ exports.getUser = function(event, context) {
   };
   db.getItem(params, function(err, data) {
     if (err) {
-      context.fail(err);
+      cb(err);
     } else {
       if (data.Item) {
-        context.succeed({"body": mapUserItem(data.Item)});
+        cb(null, {"body": mapUserItem(data.Item)});
       } else {
-        context.fail(new Error('not found'));
+        cb(new Error('not found'));
       }
     }
   });
 };
 
-exports.deleteUser = function(event, context) {
+exports.deleteUser = function(event, cb) {
   console.log("deleteUser", JSON.stringify(event));
   var params = {
     "Key": {
@@ -119,14 +119,14 @@ exports.deleteUser = function(event, context) {
   };
   db.deleteItem(params, function(err) {
     if (err) {
-      context.fail(err);
+      cb(err);
     } else {
-      context.succeed();
+      cb();
     }
   });
 };
 
-exports.postTask = function(event, context) {
+exports.postTask = function(event, cb) {
   console.log("postTask", JSON.stringify(event));
   var tid = Date.now();
   var params = {
@@ -159,14 +159,14 @@ exports.postTask = function(event, context) {
   }
   db.putItem(params, function(err) {
     if (err) {
-      context.fail(err);
+      cb(err);
     } else {
-      context.succeed({"headers": {"uid": event.parameters.userId, "tid": tid}, "body": mapTaskItem(params.Item)});
+      cb(null, {"headers": {"uid": event.parameters.userId, "tid": tid}, "body": mapTaskItem(params.Item)});
     }
   });
 };
 
-exports.getTasks = function(event, context) {
+exports.getTasks = function(event, cb) {
   console.log("getTasks", JSON.stringify(event));
   var params = {
     "KeyConditionExpression": "uid = :uid",
@@ -215,7 +215,7 @@ exports.getTasks = function(event, context) {
   }
   db.query(params, function(err, data) {
     if (err) {
-      context.fail(err);
+      cb(err);
     } else {
       var res = {
         "body": data.Items.map(mapTaskItem)
@@ -223,12 +223,12 @@ exports.getTasks = function(event, context) {
       if (data.LastEvaluatedKey !== undefined) {
         res.headers = {"next": data.LastEvaluatedKey.tid.N};
       }
-      context.succeed(res);
+      cb(null, res);
     }
   });
 };
 
-exports.deleteTask = function(event, context) {
+exports.deleteTask = function(event, cb) {
   console.log("deleteTask", JSON.stringify(event));
   var params = {
     "Key": {
@@ -243,14 +243,14 @@ exports.deleteTask = function(event, context) {
   };
   db.deleteItem(params, function(err) {
     if (err) {
-      context.fail(err);
+      cb(err);
     } else {
-      context.succeed();
+      cb();
     }
   });
 };
 
-exports.putTask = function(event, context) {
+exports.putTask = function(event, cb) {
   console.log("putTask", JSON.stringify(event));
   var params = {
     "Key": {
@@ -271,14 +271,14 @@ exports.putTask = function(event, context) {
   };
   db.updateItem(params, function(err) {
     if (err) {
-      context.fail(err);
+      cb(err);
     } else {
-      context.succeed();
+      cb();
     }
   });
 };
 
-exports.getTasksByCategory = function(event, context) {
+exports.getTasksByCategory = function(event, cb) {
   console.log("getTasksByCategory", JSON.stringify(event));
   var params = {
     "KeyConditionExpression": "category = :category",
@@ -317,7 +317,7 @@ exports.getTasksByCategory = function(event, context) {
   }
   db.query(params, function(err, data) {
     if (err) {
-      context.fail(err);
+      cb(err);
     } else {
       var res = {
         "body": data.Items.map(mapTaskItem)
@@ -325,7 +325,7 @@ exports.getTasksByCategory = function(event, context) {
       if (data.LastEvaluatedKey !== undefined) {
         res.headers = {"next": data.LastEvaluatedKey.tid.N};
       }
-      context.succeed(res);
+      cb(null, res);
     }
   });
 };
