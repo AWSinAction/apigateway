@@ -63,6 +63,10 @@ export ApiGatewayEndpoint="$ApiId.execute-api.us-east-1.amazonaws.com/v1"
 
 and now [use the RESTful API](#use-the-restful-api).
 
+### Using CloudFormation, Swagger / OpenAPI Specification and the AWS CLI
+
+coming soon...
+
 ### Using CloudFormation, Swagger / OpenAPI Specification and the Amazon API Gateway Importer
 
 clone this repository
@@ -221,6 +225,10 @@ delete S3 bucket (replace `$S3Bucket`)
 ```
 $ aws s3 rb --force s3://$S3Bucket
 ```
+
+### Using CloudFormation, Swagger / OpenAPI Specification and the AWS CLI
+
+coming soon...
 
 ### Using CloudFormation, Swagger / OpenAPI Specification and the Amazon API Gateway Importer
 
