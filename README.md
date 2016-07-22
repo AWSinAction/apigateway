@@ -10,7 +10,7 @@ You have multiple options to setup the example:
 
 1. Using CloudFormation
 2. Using CloudFormation, [Swagger / OpenAPI Specification](https://openapis.org/specification) and the AWS CLI
-3. Using CloudFormation, [Swagger / OpenAPI Specification](https://openapis.org/specification) and the [Amazon API Gateway Importer](https://github.com/awslabs/aws-apigateway-importer)
+3. Deprecated: ~~Using CloudFormation, [Swagger / OpenAPI Specification](https://openapis.org/specification) and the [Amazon API Gateway Importer](https://github.com/awslabs/aws-apigateway-importer)~~
 
 ### Using CloudFormation
 
@@ -146,7 +146,7 @@ export ApiGatewayEndpoint="$ApiId.execute-api.us-east-1.amazonaws.com/stage/v1"
 
 and now [use the RESTful API](#use-the-restful-api).
 
-### Using CloudFormation, Swagger / OpenAPI Specification and the Amazon API Gateway Importer
+### Deprecated: ~~Using CloudFormation, Swagger / OpenAPI Specification and the Amazon API Gateway Importer~~
 
 > This method is deprecated. Please choose one of the other methods mentioned earlier!
 
