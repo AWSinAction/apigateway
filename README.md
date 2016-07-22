@@ -132,7 +132,7 @@ update the CloudFormation template to set the `ApiId` parameter (replace `$ApiId
 $ aws cloudformation update-stack --stack-name apigateway --template-body file://template.json --capabilities CAPABILITY_IAM --parameters ParameterKey=S3Bucket,UsePreviousValue=true ParameterKey=S3Key,UsePreviousValue=true ParameterKey=ApiId,ParameterValue=$ApiId
 ```
 
-deploy to stage (replace `$ApiId`)
+deploy to stage v1 (replace `$ApiId`)
 
 ```
 $ aws apigateway create-deployment --rest-api-id $ApiId --stage-name v1
@@ -141,7 +141,7 @@ $ aws apigateway create-deployment --rest-api-id $ApiId --stage-name v1
 set the `$ApiGatewayEndpoint` environment variable (replace `$ApiId`)
 
 ```
-export ApiGatewayEndpoint="$ApiId.execute-api.us-east-1.amazonaws.com/stage/v1"
+export ApiGatewayEndpoint="$ApiId.execute-api.us-east-1.amazonaws.com/v1"
 ```
 
 and now [use the RESTful API](#use-the-restful-api).
