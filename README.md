@@ -120,7 +120,7 @@ $ sed -i '.bak' 's/$LambdaArn/arn:aws:lambda:us-east-1:YYY:function:apigateway-L
 
 deploy the API Gateway
 
-==make sure you have an up-to-date version (`aws --version`) of the AWS CLI >= 1.10.18. Learn more here: http://docs.aws.amazon.com/cli/latest/userguide/installing.html==
+> make sure you have an up-to-date version (`aws --version`) of the AWS CLI >= 1.10.18. Learn more here: http://docs.aws.amazon.com/cli/latest/userguide/installing.html
 
 ```
 $ aws apigateway import-rest-api --fail-on-warnings --body file://swagger.json
@@ -147,6 +147,8 @@ export ApiGatewayEndpoint="$ApiId.execute-api.us-east-1.amazonaws.com/stage/v1"
 and now [use the RESTful API](#use-the-restful-api).
 
 ### Using CloudFormation, Swagger / OpenAPI Specification and the Amazon API Gateway Importer
+
+> This method is deprecated. Please choose one of the other methods mentioned earlier!
 
 clone this repository
 
