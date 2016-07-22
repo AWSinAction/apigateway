@@ -462,7 +462,6 @@
   "definitions": {
     "Task": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "tid": {
           "type": "integer"
@@ -487,7 +486,6 @@
     },
     "CreateTask": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "description": {
           "type": "string"
@@ -503,7 +501,6 @@
     },
     "User": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "uid": {
           "type": "string"
@@ -519,7 +516,6 @@
     },
     "CreateUser": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "email": {
           "type": "string"
