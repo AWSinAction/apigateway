@@ -1,0 +1,86 @@
+service: aws-nodejs
+provider: aws
+runtime: nodejs4.3
+
+# you can add packaging information here
+#package:
+#  include:
+#    - include-me.js
+#  exclude:
+#    - exclude-me.js
+#  artifact: my-service-code.zip
+
+functions:
+  getUsers:
+    handler: handler.getUsers
+    events:
+    - http:
+      path: users
+      method: get
+
+resources:
+  Resources:
+    IamPolicyLambdaDynamo:
+      Type: AWS::IAM::Policy
+      Properties:
+        PolicyName: dev-com-sb-actionboard-auth-dynamodb
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+          - Effect: Allow
+            Action:
+            - dynamodb:Scan
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:DeleteItem
+            - dynamodb:Query
+            - dynamodb:UpdateItem
+            Resource:
+            - "Fn::Join": ["", ["arn:aws:dynamodb:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":table/todo-user*"]]
+            - "Fn::Join": ["", ["arn:aws:dynamodb:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":table/todo-task*"]]
+        Roles:
+        - "Ref": "IamRoleLambda"
+    UserTable: 
+      Type: "AWS::DynamoDB::Table"
+      Properties: 
+        AttributeDefinitions: 
+        - AttributeName: "uid"
+          AttributeType: "S"
+        KeySchema: 
+        - AttributeName: "uid"
+          KeyType: "HASH"
+        ProvisionedThroughput: 
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: "todo-user"
+    TaskTable: 
+      Type: "AWS::DynamoDB::Table"
+      Properties: 
+        AttributeDefinitions: 
+        - AttributeName: "uid"
+          AttributeType: "S"
+        - AttributeName: "tid"
+          AttributeType: "N"
+        - AttributeName: "category"
+          AttributeType: "S"
+        KeySchema: 
+        - AttributeName: "uid"
+          KeyType: "HASH"
+        - AttributeName: "tid"
+          KeyType: "RANGE"
+        GlobalSecondaryIndexes: 
+        - IndexName: "category-index"
+          KeySchema: 
+          - AttributeName: "category"
+            KeyType: "HASH"
+          - AttributeName: "tid"
+            KeyType: "RANGE"
+          Projection: 
+            ProjectionType: "ALL"
+          ProvisionedThroughput: 
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        ProvisionedThroughput: 
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: "todo-task"
