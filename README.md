@@ -8,9 +8,52 @@ Use [Swagger UI](http://petstore.swagger.io/?url=https://raw.githubusercontent.c
 
 You have multiple options to setup the example:
 
-1. Using CloudFormation
-2. Using CloudFormation, [Swagger / OpenAPI Specification](https://openapis.org/specification) and the AWS CLI
-3. Deprecated: ~~Using CloudFormation, [Swagger / OpenAPI Specification](https://openapis.org/specification) and the [Amazon API Gateway Importer](https://github.com/awslabs/aws-apigateway-importer)~~
+1. Using the [Serverless Framework](http://serverless.com/)
+2. Using CloudFormation
+3. Using CloudFormation, [Swagger / OpenAPI Specification](https://openapis.org/specification) and the AWS CLI
+4. Deprecated: ~~Using CloudFormation, [Swagger / OpenAPI Specification](https://openapis.org/specification) and the [Amazon API Gateway Importer](https://github.com/awslabs/aws-apigateway-importer)~~
+
+### Using the Serverless Framework
+
+clone this repository
+
+```
+$ git clone git@github.com:AWSinAction/apigateway.git
+$ cd apigateway/
+```
+
+install the Serverless Framework
+
+```
+$ npm install -g serverless@alpha
+```
+
+switch to the `serverless-framework` folder and install the dependencies
+
+```
+$ cd serverless-framework/
+$ npm install --production
+```
+
+deploy the API
+
+```
+$ serverless deploy
+```
+
+using the CLI to get the  `ApiId
+
+```
+$ aws --region us-east-1 apigateway get-rest-apis
+```
+
+set the `$ApiGatewayEndpoint` environment variable (replace `$ApiId` with the `id` output from above)
+
+```
+export ApiGatewayEndpoint="$ApiId.execute-api.us-east-1.amazonaws.com/dev"
+```
+
+and now [use the RESTful API](#use-the-restful-api).
 
 ### Using CloudFormation
 
@@ -284,8 +327,8 @@ create a task with a category
 
 ```
 curl -vvv -X POST -d '{"description": "test task", "category": "test"}' -H "Content-Type: application/json" https://$ApiGatewayEndpoint/user/$UserId/task
-
 ```
+
 list tasks by category
 
 ```
@@ -293,6 +336,14 @@ curl -vvv -X GET https://$ApiGatewayEndpoint/category/$Category/task
 ```
 
 ## Teardown
+
+### Using the Serverless Framework
+
+remove the API
+
+```
+$ serverless remove
+```
 
 ### Using CloudFormation
 
