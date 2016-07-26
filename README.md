@@ -41,7 +41,7 @@ deploy the API
 $ serverless deploy
 ```
 
-using the CLI to get the  `ApiId
+using the CLI to get the  `$ApiId`
 
 ```
 $ aws --region us-east-1 apigateway get-rest-apis
