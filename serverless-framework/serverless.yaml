@@ -2,21 +2,61 @@ service: aws-nodejs
 provider: aws
 runtime: nodejs4.3
 
-# you can add packaging information here
-#package:
-#  include:
-#    - include-me.js
-#  exclude:
-#    - exclude-me.js
-#  artifact: my-service-code.zip
-
 functions:
   getUsers:
     handler: handler.getUsers
     events:
     - http:
-      path: users
-      method: get
+        path: user
+        method: GET
+  postUser:
+    handler: handler.postUser
+    events:
+    - http:
+        path: user
+        method: POST
+  getUser:
+    handler: handler.getUser
+    events:
+    - http:
+        path: user/{userId}
+        method: GET
+  deleteUser:
+    handler: handler.deleteUser
+    events:
+    - http:
+        path: user/{userId}
+        method: DELETE
+  getTasks:
+    handler: handler.getTasks
+    events:
+    - http:
+        path: user/{userId}/task
+        method: GET
+  postTask:
+    handler: handler.postTask
+    events:
+    - http:
+        path: user/{userId}/task
+        method: POST
+  putTask:
+    handler: handler.putTask
+    events:
+    - http:
+        path: user/{userId}/task/{taskId}
+        method: PUT
+  deleteTask:
+    handler: handler.deleteTask
+    events:
+    - http:
+        path: user/{userId}/task/{taskId}
+        method: DELETE
+  getTasksByCategory:
+    handler: handler.getTasksByCategory
+    events:
+    - http:
+        path: category/{category}/task
+        method: GET
 
 resources:
   Resources:
