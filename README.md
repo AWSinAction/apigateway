@@ -44,13 +44,13 @@ $ serverless deploy
 using the CLI to get the  `ApiId
 
 ```
-$ aws apigateway get-rest-apis
+$ aws --region us-east-1 apigateway get-rest-apis
 ```
 
 set the `$ApiGatewayEndpoint` environment variable (replace `$ApiId` with the `id` output from above)
 
 ```
-export ApiGatewayEndpoint="$ApiId.execute-api.us-east-1.amazonaws.com/v1"
+export ApiGatewayEndpoint="$ApiId.execute-api.us-east-1.amazonaws.com/dev"
 ```
 
 and now [use the RESTful API](#use-the-restful-api).

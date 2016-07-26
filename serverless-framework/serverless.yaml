@@ -8,55 +8,55 @@ functions:
     events:
     - http:
         path: user
-        method: GET
+        method: get
   postUser:
     handler: handler.postUser
     events:
     - http:
         path: user
-        method: POST
+        method: post
   getUser:
     handler: handler.getUser
     events:
     - http:
         path: user/{userId}
-        method: GET
+        method: get
   deleteUser:
     handler: handler.deleteUser
     events:
     - http:
         path: user/{userId}
-        method: DELETE
+        method: delete
   getTasks:
     handler: handler.getTasks
     events:
     - http:
         path: user/{userId}/task
-        method: GET
+        method: get
   postTask:
     handler: handler.postTask
     events:
     - http:
         path: user/{userId}/task
-        method: POST
+        method: post
   putTask:
     handler: handler.putTask
     events:
     - http:
         path: user/{userId}/task/{taskId}
-        method: PUT
+        method: put
   deleteTask:
     handler: handler.deleteTask
     events:
     - http:
         path: user/{userId}/task/{taskId}
-        method: DELETE
+        method: delete
   getTasksByCategory:
     handler: handler.getTasksByCategory
     events:
     - http:
         path: category/{category}/task
-        method: GET
+        method: get
 
 resources:
   Resources:
