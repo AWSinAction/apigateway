@@ -25,7 +25,7 @@ $ cd apigateway/
 install the Serverless Framework
 
 ```
-$ npm install -g serverless@alpha
+$ npm install -g serverless@beta
 ```
 
 switch to the `serverless-framework` folder and install the dependencies
@@ -39,18 +39,27 @@ deploy the API
 
 ```
 $ serverless deploy
+[...]
+Service Information
+[...]
+endpoints:
+  GET - https://$ApiId.execute-api.us-east-1.amazonaws.com/dev/category/{category}/task
+  PUT - https://$ApiId.execute-api.us-east-1.amazonaws.com/dev/user/{userId}/task/{taskId}
+  DELETE - https://$ApiId.execute-api.us-east-1.amazonaws.com/dev/user/{userId}/task/{taskId}
+  GET - https://$ApiId.execute-api.us-east-1.amazonaws.com/dev/user/{userId}/task
+  POST - https://$ApiId.execute-api.us-east-1.amazonaws.com/dev/user/{userId}/task
+  GET - https://$ApiId.execute-api.us-east-1.amazonaws.com/dev/user/{userId}
+  DELETE - https://$ApiId.execute-api.us-east-1.amazonaws.com/dev/user/{userId}
+  GET - https://$ApiId.execute-api.us-east-1.amazonaws.com/dev/user
+  POST - https://$ApiId.execute-api.us-east-1.amazonaws.com/dev/user
+functions:
+[...]
 ```
 
-using the CLI to get the  `$ApiId`
+export the API endpoint from above in a environment variable to easily make calls the the API next.
 
 ```
-$ aws --region us-east-1 apigateway get-rest-apis
-```
-
-set the `$ApiGatewayEndpoint` environment variable (replace `$ApiId` with the `id` output from above)
-
-```
-export ApiGatewayEndpoint="$ApiId.execute-api.us-east-1.amazonaws.com/dev"
+export ApiGatewayEndpoint=" https://$ApiId.execute-api.us-east-1.amazonaws.com/dev"
 ```
 
 and now [use the RESTful API](#use-the-restful-api).
