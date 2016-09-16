@@ -1,5 +1,22 @@
 service: aws-nodejs
-provider: aws
+
+provider:
+  name: aws
+  stage: dev
+  region: us-east-1
+  iamRoleStatements:
+  - Effect: Allow
+    Action:
+    - dynamodb:Scan
+    - dynamodb:PutItem
+    - dynamodb:GetItem
+    - dynamodb:DeleteItem
+    - dynamodb:Query
+    - dynamodb:UpdateItem
+    Resource:
+    - "Fn::Join": ["", ["arn:aws:dynamodb:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":table/todo-user*"]]
+    - "Fn::Join": ["", ["arn:aws:dynamodb:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":table/todo-task*"]]
+
 runtime: nodejs4.3
 
 functions:
@@ -60,26 +77,6 @@ functions:
 
 resources:
   Resources:
-    IamPolicyLambdaDynamo:
-      Type: AWS::IAM::Policy
-      Properties:
-        PolicyName: dev-com-sb-actionboard-auth-dynamodb
-        PolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-          - Effect: Allow
-            Action:
-            - dynamodb:Scan
-            - dynamodb:PutItem
-            - dynamodb:GetItem
-            - dynamodb:DeleteItem
-            - dynamodb:Query
-            - dynamodb:UpdateItem
-            Resource:
-            - "Fn::Join": ["", ["arn:aws:dynamodb:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":table/todo-user*"]]
-            - "Fn::Join": ["", ["arn:aws:dynamodb:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":table/todo-task*"]]
-        Roles:
-        - "Ref": "IamRoleLambda"
     UserTable: 
       Type: "AWS::DynamoDB::Table"
       Properties: 

@@ -25,7 +25,7 @@ $ cd apigateway/
 install the Serverless Framework
 
 ```
-$ npm install -g serverless@beta
+$ npm install -g serverless@1.0.0-rc.1
 ```
 
 switch to the `serverless-framework` folder and install the dependencies
