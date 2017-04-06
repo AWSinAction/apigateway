@@ -17,7 +17,7 @@ provider:
     - "Fn::Join": ["", ["arn:aws:dynamodb:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":table/todo-user*"]]
     - "Fn::Join": ["", ["arn:aws:dynamodb:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":table/todo-task*"]]
 
-runtime: nodejs4.3
+runtime: nodejs6.10
 
 functions:
   getUsers:

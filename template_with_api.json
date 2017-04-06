@@ -129,7 +129,7 @@
         "Handler": "lambda.handler",
         "MemorySize": 128,
         "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},
-        "Runtime": "nodejs4.3",
+        "Runtime": "nodejs6.10",
         "Timeout": 3
       }
     },
