@@ -1,6 +1,6 @@
 # AWS in Action: API Gateway
 
-The example in this repository reuses the example from chapter 10 in [Amanzon Web Services in Action](http://bit.ly/amazon-web-services-in-action). You can find the code for the original example in the book's [code repository](https://github.com/AWSinAction/code/tree/master/chapter10).
+The example in this repository reuses the example from chapter 10 in [Amazon Web Services in Action](http://bit.ly/amazon-web-services-in-action). You can find the code for the original example in the book's [code repository](https://github.com/AWSinAction/code/tree/master/chapter10).
 
 Use [Swagger UI](http://petstore.swagger.io/?url=https://raw.githubusercontent.com/AWSinAction/apigateway/master/swagger.json) to have a look at the API definition.
 
